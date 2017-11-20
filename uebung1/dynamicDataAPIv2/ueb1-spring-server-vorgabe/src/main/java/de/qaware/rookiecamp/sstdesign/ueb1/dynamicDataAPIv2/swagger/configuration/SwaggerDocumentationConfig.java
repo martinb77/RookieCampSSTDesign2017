@@ -2,14 +2,11 @@ package de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.swagger.configurati
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2017-10-21T12:50:20.735Z")
 
 @Configuration
 public class SwaggerDocumentationConfig {
