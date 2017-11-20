@@ -27,7 +27,7 @@ public class QAcoffeeAPI {
     @RequestMapping(path = "/doSomething", method = RequestMethod.GET)
     public ResponseEntity<BooleanResponse> doSomething() {
         //TODO: do some magic!
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(new BooleanResponse(Boolean.TRUE, null), HttpStatus.OK);
     }
 
 }
