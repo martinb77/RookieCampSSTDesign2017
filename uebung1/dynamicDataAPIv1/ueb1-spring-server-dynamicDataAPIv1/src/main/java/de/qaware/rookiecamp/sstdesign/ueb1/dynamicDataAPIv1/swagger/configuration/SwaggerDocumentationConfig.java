@@ -13,8 +13,8 @@ public class SwaggerDocumentationConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-            .title("Vehicle API v1")
-            .description("Original API for vehicle data. TestVIN: V1234567891234567")
+            .title("Original Vehicle API v1")
+            .description("Mock implementation. OK: V1234567891234567. NOT_FOUND: V1234567891234566. ERROR: V1234567891234568 ")
             .version("1.0.0")
             .build();
     }

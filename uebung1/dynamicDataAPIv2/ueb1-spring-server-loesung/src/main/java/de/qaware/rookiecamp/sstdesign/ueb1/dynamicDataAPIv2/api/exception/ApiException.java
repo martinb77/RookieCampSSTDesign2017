@@ -1,15 +1,19 @@
 package de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.exception;
 
-import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.model.Error;
+import org.springframework.http.HttpStatus;
 
+/**
+ * Exception describing a service failure with the corresponding http status.
+ *
+ */
 public class ApiException extends Exception{
-    private Error.ErrorCode code;
-    public ApiException (Error.ErrorCode code, String msg) {
+    private HttpStatus code;
+    public ApiException (HttpStatus code, String msg) {
         super(msg);
         this.code = code;
     }
 
-    public Error.ErrorCode getErrorCode() {
+    public HttpStatus getHttpCode() {
         return code;
     }
 }

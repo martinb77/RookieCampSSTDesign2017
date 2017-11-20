@@ -1,0 +1,42 @@
+swagger: '2.0'
+info:
+  description: Adapted API for vehicle data. - YAML-Vorgabe
+  version: 2.0.0
+  title: Vehicle API
+host: 'localhost:8081'
+basePath: /
+tags:
+  - name: dynamic-api
+    description: the dynamic API
+paths:
+  '/dynamic/{vin}':
+    get:
+      tags:
+        - vehicle data
+      summary: Returns the dynamic data of an vehicle.
+      description: ' '
+      operationId: dynamicVinGetUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: vin
+          in: path
+          description: 'the vin[17 characters] for which the services will be returned'
+          required: true
+          type: string
+        - name: offset
+          in: query
+          description: 'offset in minutes from GMT, default is 0'
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/xxx'
+        //TODO Add further responses
+definitions:
+  // TODO add definitions for the new datastructure

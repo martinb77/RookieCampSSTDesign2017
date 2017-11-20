@@ -1,6 +1,5 @@
 package de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api;
 
-        import com.google.gson.Gson;
         import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api.exception.ApiException;
         import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api.model.DynamicDataDO;
         import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api.model.ErrorDO;
@@ -15,10 +14,11 @@ package de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api;
         import org.springframework.web.bind.annotation.RequestMethod;
         import org.springframework.web.bind.annotation.RequestParam;
 
-        import java.io.File;
-        import java.io.FileNotFoundException;
-        import java.util.Scanner;
-
+/**
+ * Uebung 1 in Rookie Camp Schnittstellendesign
+ *
+ * This is the Mock-Implementation for the given backendservice returning the dynamic data of a vehicle.
+ */
 @Api(description = "the dynamic API", tags = {"vehicle data"})
 @RequestMapping(path = "/dynamic", produces = "application/json")
 @Controller

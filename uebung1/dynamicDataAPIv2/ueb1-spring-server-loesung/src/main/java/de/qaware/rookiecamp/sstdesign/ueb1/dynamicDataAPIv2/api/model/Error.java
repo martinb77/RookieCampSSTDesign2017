@@ -92,6 +92,21 @@ public class Error {
         public HttpStatus getHttpStatus() {
             return status;
         }
+
+        public static ErrorCode fromHttpStatusCode(HttpStatus httpCode) {
+            switch (httpCode){
+                case OK:
+                    return NOT_FOUND;
+                case INTERNAL_SERVER_ERROR:
+                    return UNEXPECTED_ERROR;
+                case FORBIDDEN:
+                    return USER_NOT_ALLOWED;
+                case BAD_GATEWAY:
+                    return BACKEND_ERROR;
+                default:
+                    return UNEXPECTED_ERROR;
+            }
+        }
     }
 }
 

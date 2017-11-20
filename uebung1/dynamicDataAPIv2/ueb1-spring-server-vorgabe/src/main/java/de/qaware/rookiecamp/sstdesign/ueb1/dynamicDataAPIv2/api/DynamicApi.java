@@ -5,11 +5,7 @@ import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api.model.DynamicDat
 import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api.model.ErrorDO;
 import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api.model.ErrorsDO;
 import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.exception.ApiException;
-import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.model.DynamicData;
-import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.model.Errors;
-import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.model.Error;
-import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.model.UpateInformation;
-import de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api.response.DynamicDataResponse;
+
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +22,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-@Api(description = "the dynamic API (Testvin: V1234567891234567)", tags = {"vehicle data"})
+import static org.springframework.http.HttpStatus.*;
+
+@Api(description = "Uebung 1 - Vorgabe", tags = {"vehicle data"})
 @Controller
 public class DynamicApi {
 
@@ -34,13 +32,12 @@ public class DynamicApi {
             "tracking is enabled. This method calls the CCG (Connected charging Gateway) and requests information " +
             "about the current vehicle state. formerly: ` /dynamicdata/v1/{vin}` ")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = DynamicDataResponse.class),
-            @ApiResponse(code = 403, message = "user is not allowed to access"),
-            @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.", response = Errors.class),
-            @ApiResponse(code = 502, message = "An error occurred in backend v1, unable to process the request in a proper way.", response = Errors.class)})
+    // TODO: add possible api responses with corresponding http status codes
+    // example: @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = xxx.class)
+    })
     @RequestMapping(value = "/dynamic/{vin}", produces = "application/json", method = RequestMethod.GET)
     public ResponseEntity<?> dynamicVinGet(@Size(min = 17, max = 17)
-                                           @ApiParam(value = "the vin[17 characters] for which the services will be returned", required = true)
+                                           @ApiParam(value = "the vin[17 characters] for which the services will be returned", required = true,defaultValue = "V1234567891234567")
                                            @PathVariable("vin") String vin,
                                            @ApiParam(value = "offset in minutes from GMT, default is 0")
                                            @RequestParam(value = "offset", required = false) Integer offset) {
@@ -51,49 +48,27 @@ public class DynamicApi {
         try {
             dynamicDataDO = callDynamicDataAPIv1(vin);
         } catch (ApiException e) {
-            return handleErrorResponseFromV1(e);
+            return transformApiExceptionToResponseEntity(e);
         }
 
         // 3. transform v1 data into v2
-        DynamicData dynamicData = transformV1toV2(dynamicDataDO);
+        // TODO: transform v1 data structure in the new v2 data structure
 
         // 4. return it
-        DynamicDataResponse dynamicDataResponse = new DynamicDataResponse();
-        dynamicDataResponse.setData(dynamicData);
-        return new ResponseEntity<>(dynamicDataResponse, HttpStatus.OK);
+        // TODO: return the new datastructure
+        return new ResponseEntity<>(OK);
     }
 
-    private ResponseEntity<?> handleErrorResponseFromV1(ApiException e) {
-        Errors err = new Errors();
-        Error er = new Error();
-        er.setMessage(e.getMessage());
-        er.setErrorCode(e.getErrorCode());
-        err.addErrorsItem(er);
-        DynamicDataResponse dynamicDataResponse = new DynamicDataResponse();
-        // the appropriate mapping on http status codes is done in enum ErrorCode
-        return new ResponseEntity<>(err, e.getErrorCode().getHttpStatus());
+    private ResponseEntity<?> transformApiExceptionToResponseEntity(ApiException e) {
+        // TODO: Handle error in response of v1
+        return new ResponseEntity<>(INTERNAL_SERVER_ERROR);
     }
 
     /**
-     * transforms the v1 response into v2.
-     *
-     * @param dynamicDataDO v1 Data Object
-     * @return the v2 Data Object
-     */
-    private DynamicData transformV1toV2(DynamicDataDO dynamicDataDO) {
-        DynamicData dynamicData = new DynamicData();
-        UpateInformation upateInformation = new UpateInformation();
-        String unitOfLength = dynamicDataDO.getAttributesMap().get("unitOfLength");
-        UpateInformation.UnitOfLengthEnum unitOfLengthEnum = UpateInformation.UnitOfLengthEnum.fromValue(unitOfLength);
-        upateInformation.setUnitOfLength(unitOfLengthEnum);
-        dynamicData.setUpdateInformation(upateInformation);
-        return dynamicData;
-    }
-
-    /**
-     * @param vin
-     * @return
-     * @throws ApiException
+     * calls v1 with for the given vehicle
+     * @param vin describing the vehicle for which to obtain the dynamic parameters
+     * @return response object of v1 if service returned status code 200
+     * @throws ApiException if response code is not 200. Describes the error from v1.
      */
     private DynamicDataDO callDynamicDataAPIv1(@Size(min = 17, max = 17) @ApiParam(value = "the vin[17 characters] for " +
             "which the services will be returned", required = true) @PathVariable("vin") String vin) throws ApiException {
@@ -109,32 +84,32 @@ public class DynamicApi {
             con.setRequestProperty("User-Agent", "Mozilla/5.0");
             responseCode = con.getResponseCode();
         } catch (IOException e) {
-            throw new ApiException(Error.ErrorCode.BACKEND_ERROR, "Error connecting v1");
+            throw new ApiException(INTERNAL_SERVER_ERROR, "Error connecting v1");
         }
 
 
-        switch (responseCode) {
+        switch (HttpStatus.valueOf(responseCode)) {
             // response codes without body
-            case 403:
-                throw new ApiException(Error.ErrorCode.USER_NOT_ALLOWED, "user is not allowed to access");
-            case 404:
-                throw new ApiException(Error.ErrorCode.NOT_FOUND, "vehicle and/or services not found");
-            // response codes with body --> read content
-            case 200:
+            case FORBIDDEN:
+                throw new ApiException(FORBIDDEN, "user is not allowed to access");
+            case NOT_FOUND:
+                throw new ApiException(NOT_FOUND, "vehicle and/or services not found");
+                // response codes with body --> read content
+            case OK:
                 DynamicDataDO v1Response = new DynamicDataDO();
                 v1Response = new Gson().fromJson(readBody(con), DynamicDataDO.class);
                 return v1Response;
             // response codes with errors in body
-            case 500:
-            case 503:
+            case INTERNAL_SERVER_ERROR:
+            case SERVICE_UNAVAILABLE:
                 // responseCode either 500 200: parse error from json
                 ErrorsDO errorsDO = new Gson().fromJson(readBody(con), ErrorsDO.class);
                 ErrorDO errorDO = errorsDO.getErrors().get(0);
-                throw new ApiException(Error.ErrorCode.BACKEND_ERROR, errorDO.getMessage());
+                throw new ApiException(INTERNAL_SERVER_ERROR, errorDO.getMessage());
+            default:
+                // unexpected responseCode
+                throw new ApiException(INTERNAL_SERVER_ERROR, "Unexpected response code from v1");
         }
-
-        // unexpected responseCode
-        throw new ApiException(Error.ErrorCode.BACKEND_ERROR, "Unexpected response code from v1");
 
     }
 
@@ -149,11 +124,11 @@ public class DynamicApi {
             }
 
             bufferedReader.close();
-            System.out.print(sb);
+
             String response = sb.toString();
             return response;
         } catch (IOException e) {
-            throw new ApiException(Error.ErrorCode.BACKEND_ERROR, "could not parse content from v1");
+            throw new ApiException(INTERNAL_SERVER_ERROR, "could not parse content from v1");
         }
 
     }
