@@ -37,6 +37,7 @@ paths:
           description: 'Successful operation, may contain business errors.'
           schema:
 #            $ref: '#/definitions/xxx'
+#        TODO Add definition
 #        TODO Add further responses
 definitions:
 # TODO add definitions for the new datastructure
