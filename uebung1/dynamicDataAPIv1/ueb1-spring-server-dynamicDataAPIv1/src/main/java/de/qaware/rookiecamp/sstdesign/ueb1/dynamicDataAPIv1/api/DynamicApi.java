@@ -24,7 +24,7 @@ package de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv1.api;
 @Controller
 public class DynamicApi {
 
-    @ApiOperation(value = "This method returns the dynamic data of an vehicle",
+    @ApiOperation(value = "This method returns the dynamic data of an vehicle.",
             notes = "Position will be returned only, if vehicle tracking is enabled. This method calls the " +
                     "CCG (Connected charging Gateway) and requests information about the following attributes: " +
                     "beConditionBasedSer-vices, beMaxRangeFuel, beMaxRangeElectric, beRemainingRangeFuel, " +
