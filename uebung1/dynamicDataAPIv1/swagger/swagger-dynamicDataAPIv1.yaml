@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  description: Original API for vehicle data. Mock implementation. OK V1234567891234567. NOT_FOUND V1234567891234566. ERROR V1234567891234568
+  description: Original API for vehicle data. Mock info. OK V1234567891234567. NOT_FOUND V1234567891234566. ERROR V1234567891234568
   version: 1.0.0
   title: Vehicle API
 host: 'localhost:8080'
