@@ -21,11 +21,12 @@ public class QAcoffeeAPI {
     @ApiOperation(value = "Returns something.", notes = "some more description here")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = BooleanResponse.class),
+            @ApiResponse(code = 400, message = "Error in request parameters.", response = Errors.class),
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.", response = Errors.class)
     })
     @RequestMapping(path = "/doSomething", method = RequestMethod.GET)
     public ResponseEntity<BooleanResponse> doSomething() {
-        // do some magic!
+        //TODO: do some magic!
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
