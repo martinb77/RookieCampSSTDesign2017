@@ -1,0 +1,263 @@
+swagger: '2.0'
+info:
+  description: Adapted API for vehicle data. - YAML-Lösung
+  version: 2.0.0
+  title: Vehicle API
+host: 'localhost:8082'
+basePath: /
+tags:
+  - name: dynamic-api
+    description: the dynamic API
+paths:
+  '/dynamic/{vin}':
+    get:
+      tags:
+        - vehicle data
+      summary: Returns the dynamic data of an vehicle.
+      description: 'Position will be returned only, if vehicle tracking is enabled. This method calls the CCG (Connected charging Gateway) and requests information about the current vehicle state. formerly: ` /dynamicdata/v1/{vin}` '
+      operationId: dynamicVinGetUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: vin
+          in: path
+          description: 'the vin[17 characters] for which the services will be returned'
+          required: true
+          type: string
+        - name: offset
+          in: query
+          description: 'offset in minutes from GMT, default is 0'
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/DynamicDataResponseDO'
+        '400':
+          description: Error in request parameters.
+        '401':
+          description: Unauthorized
+        '403':
+          description: user is not allowed to access
+        '404':
+          description: Not Found
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/ErrorsDO'
+definitions:
+  UpateInformationDO:
+    type: object
+    properties:
+      lastTripTimeEnd:
+        type: string
+        format: date-time
+      lastUpdateReason:
+        type: string
+        enum:
+          - VEHCSHUTDOWN
+          - ONDEMAND
+          - DOORSTATECHANGED
+          - INVALID
+      unitOfCombustionConsumption:
+        type: string
+        enum:
+          - l100km
+          - MPG
+      unitOfLength:
+        type: string
+        enum:
+          - km
+          - miles
+      updateTime:
+        type: string
+        format: date-time
+  ErrorDO:
+    type: object
+    properties:
+      errorCode:
+        type: string
+      message:
+        type: string
+    description: business errors
+  OpeningStateDO:
+    type: object
+    properties:
+      doorDriverFront:
+        type: string
+        enum:
+          - CLOSED
+          - OPEN
+          - INVALID
+      doorDriverRear:
+        type: string
+        enum:
+          - CLOSED
+          - OPEN
+          - INVALID
+      doorLockState:
+        type: string
+        enum:
+          - SECURED
+          - LOCKED
+          - UNLOCKED
+          - INVALID
+          - SELECTIVELOCKED
+      doorPassengerFront:
+        type: string
+        enum:
+          - CLOSED
+          - OPEN
+          - INVALID
+      doorPassengerRear:
+        type: string
+        enum:
+          - CLOSED
+          - OPEN
+          - INVALID
+      hoodState:
+        type: string
+        enum:
+          - CLOSED
+          - OPEN
+          - INVALID
+      sunroofPosition:
+        type: integer
+        format: int32
+      sunroofState:
+        type: string
+        enum:
+          - CLOSED
+          - INTERMEDIATE
+          - OPEN
+          - INVALID
+      trunkState:
+        type: string
+        enum:
+          - CLOSED
+          - OPEN
+          - INVALID
+      windowDriverFront:
+        type: string
+        enum:
+          - CLOSED
+          - INTERMEDIATE
+          - OPEN
+          - INVALID
+      windowDriverRear:
+        type: string
+        enum:
+          - CLOSED
+          - INTERMEDIATE
+          - OPEN
+          - INVALID
+      windowPassengerFront:
+        type: string
+        enum:
+          - CLOSED
+          - INTERMEDIATE
+          - OPEN
+          - INVALID
+      windowPassengerRear:
+        type: string
+        enum:
+          - CLOSED
+          - INTERMEDIATE
+          - OPEN
+          - INVALID
+    description: 'opening state of doors, windows, ...'
+  ErrorsDO:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/ErrorDO'
+  VehicleMessageDO:
+    type: object
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+        format: int32
+      messageType:
+        type: string
+        enum:
+          - CCM
+          - CBS
+      status:
+        type: string
+        enum:
+          - OK
+          - PENDING
+          - OVERDUE
+          - INVALID
+      text:
+        type: string
+      unitOfLengthRemaining:
+        type: string
+  VehicleStateDO:
+    type: object
+    properties:
+      conditionBasedServices:
+        type: string
+      connectorStatus:
+        type: string
+        enum:
+          - CONNECTED
+          - DISCONNECTED
+      gpsLat:
+        type: number
+      gpsLon:
+        type: number
+      heading:
+        type: integer
+        format: int32
+      lightsParking:
+        type: string
+        enum:
+          - 'OFF'
+          - RIGHT
+          - LEFT
+      mileage:
+        type: integer
+        format: int32
+      remainingFuel:
+        type: number
+      remainingRangeFuel:
+        type: number
+      vehicleTracking:
+        type: boolean
+  DynamicDataResponseDO:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/DynamicDataDO'
+      error:
+        $ref: '#/definitions/ErrorsDO'
+    description: vehicle dynamic data
+  DynamicDataDO:
+    type: object
+    properties:
+      cbsMessages:
+        type: array
+        items:
+          $ref: '#/definitions/VehicleMessageDO'
+      ccmMessages:
+        type: array
+        items:
+          $ref: '#/definitions/VehicleMessageDO'
+      openingState:
+        $ref: '#/definitions/OpeningStateDO'
+      updateInformation:
+        $ref: '#/definitions/UpateInformationDO'
+      vehicleState:
+        $ref: '#/definitions/VehicleStateDO'
+    description: dynamic data of the given vehicle - empty if no data available
