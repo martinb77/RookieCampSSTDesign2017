@@ -1,0 +1,108 @@
+swagger: '2.0'
+info:
+  description: Original API for vehicle data.
+  version: 1.0.0
+  title: Vehicle API
+host: 'localhost:8080'
+basePath: /
+tags:
+  - name: vehicle data
+    description: the dynamic API
+paths:
+  '/dynamic/{vin}':
+    get:
+      tags:
+        - vehicle data
+      summary: This method returns the dynamic data of an vehicle.
+      description: 'Position will be returned only, if vehicle tracking is enabled. This method calls the CCG (Connected charging Gateway) and requests information about the following attributes: beConditionBasedSer-vices, beMaxRangeFuel, beMaxRangeElectric, beRemainingRangeFuel, beRemainingRangeElectric, unitOfLength, unitOfEnergy, unitOfElectricConsumption, unitOfCombustionConsumption, isAmPm, updateTime, Segment_LastTrip_time_segment_end. BevService.getVehicleInformation(); formerly: /dynamicdata/v1/{vin} '
+      operationId: dynamicVinGetUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: vin
+          in: path
+          description: 'the vin[17 characters] for which the services will be returned'
+          default: "V1234567891234567"
+          required: true
+          type: string
+        - name: offset
+          in: query
+          description: 'offset in minutes from GMT, default is 0'
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DynamicDataDO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: user is not allowed to access
+        '404':
+          description: vehicle and/or services not found
+        '500':
+          description: An internal error occurred
+          schema:
+            $ref: '#/definitions/ErrorsDO'
+        '503':
+          description: A business exception occured
+          schema:
+            $ref: '#/definitions/ErrorsDO'
+definitions:
+  ErrorDO:
+    type: object
+    properties:
+      errorCode:
+        type: string
+      message:
+        type: string
+  ErrorsDO:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/ErrorDO'
+  VehicleMessageDO:
+    type: object
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+        format: int32
+      messageType:
+        type: string
+        enum:
+          - CCM
+          - CBS
+      status:
+        type: string
+        enum:
+          - OK
+          - PENDING
+          - OVERDUE
+          - INVALID
+      text:
+        type: string
+      unitOfLengthRemaining:
+        type: string
+  DynamicDataDO:
+    type: object
+    properties:
+      attributesMap:
+        type: object
+        additionalProperties: #=> map<string, string>
+          type: string
+      vehicleMessages:
+        type: object
+        additionalProperties: #=> map<string, VehicleMessageDO[]>
+          type: array
+          items:
+            $ref: '#/definitions/VehicleMessageDO'

@@ -1,0 +1,72 @@
+{
+  "attributesMap" : {
+    //update information
+    "updateTime" : "27.09.2017 09:47:27 UTC",
+    "lastUpdateReason" : "VEHCSHUTDOWN",
+    "Segment_LastTrip_time_segment_end" : "27.09.2017 08:48:00 UTC",
+
+    //preferred units
+    "unitOfLength" : "km",
+    "unitOfCombustionConsumption" : "l/100km",
+
+    //vehicle state
+    "condition_based_services" : "00003,OK,2019-01,;00017,OK,2019-07,;00032,OK,2020-02,",
+    "connectorStatus" : "CONNECTED",
+    "mileage" : "18427",
+    "lights_parking" : "OFF",
+    //vehiclePosition
+    "vehicle_tracking" : "1",
+    "heading" : "250",
+    "gps_lat" : "48.104298",
+    "gps_lng" : "11.600391",
+    //combustion state
+    "remaining_fuel" : "0",
+    "kombi_current_remaining_range_fuel" : "0.0",
+
+    //vehicle doors & light state
+    "door_lock_state" : "SECURED",
+    "door_passenger_front" : "CLOSED",
+    "door_driver_rear" : "CLOSED",
+    "door_passenger_rear" : "CLOSED",
+    "door_driver_front" : "CLOSED",
+    "hood_state" : "CLOSED",
+    "window_passenger_front" : "CLOSED",
+    "window_passenger_rear" : "CLOSED",
+    "window_driver_front" : "CLOSED",
+    "window_driver_rear" : "INVALID",
+    "sunroof_position" : "0",
+    "sunroof_state" : "CLOSED",
+    "trunk_state" : "CLOSED"
+  },
+  "vehicleMessages" : {
+    "ccmMessages" : [ {
+      "text" : "Antrieb Gemäßigt fahren",
+      "id" : 367,
+      "status" : "NULL",
+      "messageType" : "CCM",
+      "unitOfLengthRemaining" : "1788"
+    } ],
+    "cbsMessages" : [ {
+      "description" : "Nächster Wechsel spätestens zum angegebenen Termin.",
+      "text" : "Bremsflüssigkeit",
+      "id" : 3,
+      "status" : "OK",
+      "messageType" : "CBS",
+      "date" : "2019-01"
+    }, {
+      "description" : "Nächste Sichtprüfung nach der angegebenen Fahrstrecke oder zum angegebenen Termin.",
+      "text" : "Fahrzeug-Check",
+      "id" : 17,
+      "status" : "OK",
+      "messageType" : "CBS",
+      "date" : "2019-07"
+    }, {
+      "description" : "Nächste gesetzliche Fahrzeuguntersuchung zum angegebenen Termin.",
+      "text" : "§ Fahrzeuguntersuchung",
+      "id" : 32,
+      "status" : "OK",
+      "messageType" : "CBS",
+      "date" : "2020-02"
+    } ]
+  }
+}

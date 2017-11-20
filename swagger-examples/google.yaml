@@ -1,0 +1,75 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: my first api
+  description: description
+host: www.googleapis.com
+schemes:
+  - https
+basePath: /customsearch
+paths:
+  /v1:
+    get:
+      tags:
+        - base
+      description: some description
+      parameters:
+        - in: query
+          name: key
+          type: string
+          required: true
+        - in: query
+          description: the query
+          required: true
+          name: q
+          type: string
+        - in: query
+          name: cx
+          description: custom search engine ID
+          required: true
+          type: string
+        - in: query
+          name: justAnotherParam
+          description: asdf
+          type: integer
+          required: false
+      responses:
+        '200':
+          description: OK
+definitions:
+  SearchResponse:
+    type: object
+    properties:
+      kind:
+        type: string
+      url:
+        type: object
+        properties:
+          type:
+            type: string
+          template:
+            type: string
+      queries:
+        type: object
+        properties:
+          request:
+            type: array
+            items:
+              type: string
+          nextPage:
+            type: array
+            items:
+              type: string
+
+  MySearchResponse:
+    allOf:
+      - ref: '#/definitions/SearchResponse'
+    properties:
+      anotherParam:
+        type: string
+        required: true
+  SearchResponseList:
+    type: array
+    items:
+      type: '#/definitions/SearchResponse'
+

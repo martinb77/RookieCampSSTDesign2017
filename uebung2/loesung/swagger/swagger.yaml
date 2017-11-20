@@ -1,0 +1,363 @@
+swagger: '2.0'
+info:
+  description: API for evaluating coffee at QAware.
+  version: 1.0.0
+  title: QAcoffee API
+host: 'localhost:8091'
+basePath: /
+tags:
+  - name: reporting
+    description: QAcoffee reporting api
+  - name: data
+    description: Administrative functions for the QAcoffe application
+  - name: evaluation
+    description: The QAcoffee evaluation API - for evaluating beverages.
+paths:
+  /data/beverages:
+    get:
+      tags:
+        - data
+      summary: Returns all beverages of QAcoffee.
+      operationId: getBeveragesUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/BeverageListResponse'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+    post:
+      tags:
+        - data
+      summary: Create a new beverage. Requires ADMIN role.
+      description: Return value is the stored data including its new beverageId.
+      operationId: createBeverageUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: beverage
+          description: 'The beverage which should be created, ''beverageId'' must be not set.'
+          required: true
+          schema:
+            $ref: '#/definitions/Beverage'
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/BeverageResponse'
+        '400':
+          description: 'Wrong parameters, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+    put:
+      tags:
+        - data
+      summary: Update a given beverage. Requires ADMIN role.
+      description: The beverage must be already existent. Return value is the updated and stored data.
+      operationId: updateBeverageUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: beverage
+          description: The updated data of the beverage
+          required: true
+          schema:
+            $ref: '#/definitions/Beverage'
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/BeverageResponse'
+        '400':
+          description: 'Wrong parameters, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+  '/data/beverages/{beverage}':
+    delete:
+      tags:
+        - data
+      summary: Delete a certain beverage. Requires ADMIN role.
+      description: Deletes the beverage in the database
+      operationId: deleteBeverageUsingDELETE
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: beverage
+          in: path
+          description: the ID of the beverage
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/BooleanResponse'
+        '400':
+          description: 'Wrong parameters, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+  /data/coffees:
+    get:
+      tags:
+        - data
+      summary: Returns all coffees of QAcoffee.
+      operationId: getCoffeesUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/CoffeeListResponse'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+  /evaluation/evaluate:
+    post:
+      tags:
+        - evaluation
+      summary: Place a new evaluation.
+      description: 'Returns TRUE if the evaluation was successful processed, FALSE if not + Errors.'
+      operationId: evaluateUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: employeeId
+          in: query
+          description: the evaluating employee
+          required: true
+          type: integer
+          format: int32
+        - in: body
+          name: evaluation
+          description: the evaluation itself
+          required: true
+          schema:
+            $ref: '#/definitions/Evaluation'
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/BooleanResponse'
+        '400':
+          description: 'Wrong parameters, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+  /reporting/create:
+    get:
+      tags:
+        - reporting
+      summary: Create a new report upon all stored evaluations.
+      description: Created report is a calculated average for the numerical values and a summary (all comibined) for the remarks.
+      operationId: createReportUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/ReportResponse'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+definitions:
+  Beverage:
+    type: object
+    required:
+      - beverageId
+      - coffee
+      - name
+      - timePeriods
+    properties:
+      beverageId:
+        type: integer
+        format: int32
+        description: 'The unique ID of the beverage. Set by the server, never by the client.'
+      coffee:
+        description: The coffee type which this beverage is made of.
+        $ref: '#/definitions/Coffee'
+      name:
+        type: string
+        example: Espresso
+        description: Some descriptive name for the beverage.
+      timePeriods:
+        type: array
+        description: 'TimePeriods, where this beverage was/is available for drinking.'
+        items:
+          $ref: '#/definitions/TimePeriod'
+    description: Beverage for QAcoffee. A Beverage is some drink made of @Coffee which is available at a certain time to be consumed.
+  BeverageListResponse:
+    type: object
+    properties:
+      businessErrors:
+        description: possible business errors.
+        $ref: '#/definitions/Errors'
+      payload:
+        type: array
+        description: the business data payload.
+        items:
+          $ref: '#/definitions/Beverage'
+    description: Response of a Beverage list.
+  BeverageResponse:
+    type: object
+    properties:
+      businessErrors:
+        description: possible business errors.
+        $ref: '#/definitions/Errors'
+      payload:
+        description: the business data payload.
+        $ref: '#/definitions/Beverage'
+    description: Response of a Beverage.
+  BooleanResponse:
+    type: object
+    properties:
+      businessErrors:
+        description: possible business errors.
+        $ref: '#/definitions/Errors'
+      payload:
+        type: boolean
+        example: false
+        description: the business data payload.
+    description: Response with a boolean result.
+  Coffee:
+    type: object
+    required:
+      - brand
+      - coffeeId
+    properties:
+      brand:
+        type: string
+        example: Fausto Napoli - 100% Arabica
+        description: The descriptive brand/type of the coffee beans to be identified by human beings.
+      coffeeId:
+        type: integer
+        format: int64
+        description: 'The unique ID of this coffee. May not be set by the client, but only by the server.'
+      image:
+        type: string
+        format: byte
+    description: Coffee data for QAcoffee. A coffee is nothing more ore less than a coffee bean type and brand.
+  CoffeeListResponse:
+    type: object
+    properties:
+      businessErrors:
+        description: possible business errors.
+        $ref: '#/definitions/Errors'
+      payload:
+        type: array
+        description: the business data payload.
+        items:
+          $ref: '#/definitions/Coffee'
+    description: Response of a coffee list.
+  Error:
+    type: object
+    properties:
+      errorCode:
+        type: string
+        description: The type of the error.
+        enum:
+          - INCOMPLETE
+          - NOT_FOUND
+          - UNKNOWN_ERROR
+      message:
+        type: string
+        description: Some descriptive message which describes the error.
+    description: business errors
+  Errors:
+    type: object
+    properties:
+      errors:
+        type: array
+        description: All occured errors
+        items:
+          $ref: '#/definitions/Error'
+  Evaluation:
+    type: object
+    required:
+      - beverage
+      - look
+      - remarks
+      - taste
+    properties:
+      beverage:
+        description: 'The beverage, which this evaluation is given.'
+        $ref: '#/definitions/Beverage'
+      look:
+        type: integer
+        format: int32
+        description: The experienced look.
+        minimum: 1
+        maximum: 100
+      remarks:
+        type: string
+        description: 'Some further remarks, which are not related to look or taste.'
+      taste:
+        type: integer
+        format: int32
+        description: The experienced taste.
+        minimum: 1
+        maximum: 100
+    description: Evaluation data for QAcoffee
+  ReportResponse:
+    type: object
+    properties:
+      businessErrors:
+        description: possible business errors.
+        $ref: '#/definitions/Errors'
+      payload:
+        type: array
+        description: the business data payload.
+        items:
+          $ref: '#/definitions/Evaluation'
+    description: Response for Reports
+  TimePeriod:
+    type: object
+    required:
+      - start
+    properties:
+      end:
+        type: string
+        format: date-time
+      start:
+        type: string
+        format: date-time
+    description: TimePeriod data for a certain beverage of QAcoffee

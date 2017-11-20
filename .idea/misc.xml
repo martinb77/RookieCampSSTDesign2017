@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/uebung1/vorgabe/spring-server/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung1/loesung/spring-server/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung1/vorgabe/ueb1-spring-server-vorgabe/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung1/loesung/ueb1-spring-server-loesung/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung2/loesung/ueb2-spring-server-loesung/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung2/vorgabe/ueb2-spring-server-vorgabe/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung1/dynamicDataAPIv1/ueb1-spring-server-vorgabe/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung1/dynamicDataAPIv2/ueb1-spring-server-loesung/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung1/dynamicDataAPIv1/ueb1-spring-server-dynamicDataAPIv1/pom.xml" />
+        <option value="$PROJECT_DIR$/uebung1/dynamicDataAPIv2/ueb1-spring-server-dynamicDataAPIv2/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="false" project-jdk-name="1.8" project-jdk-type="JavaSDK" />
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://www.qaware.de/svn/QACampus/camps/2017-Rookie-Camps/02_schnittstellendesign/codebase" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="mySupportsUserInfoFilter" value="true" />
+  </component>
+</project>

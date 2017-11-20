@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="swagger-spring (1)" />
+        <module name="swagger-spring-vorgabe" />
+        <module name="ueb1-spring-server-dynamicDataAPIv1" />
+        <module name="ueb1-spring-server-dynamicDataAPIv2" />
+        <module name="ueb1-spring-server-loesung" />
+        <module name="ueb1-spring-server-vorgabe" />
+        <module name="ueb2-spring-server-loesung" />
+        <module name="ueb2-spring-server-vorgabe" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="swagger-jaxrs-server" target="1.7" />
+      <module name="swagger-spring" target="1.7" />
+      <module name="swagger-spring (1)" target="1.7" />
+      <module name="swagger-spring-loesung" target="1.7" />
+      <module name="swagger-spring-vorgabe" target="1.7" />
+      <module name="ueb1-spring-server-dynamicDataAPIv1" target="1.8" />
+      <module name="ueb1-spring-server-dynamicDataAPIv2" target="1.8" />
+      <module name="ueb1-spring-server-loesung" target="1.8" />
+      <module name="ueb1-spring-server-vorgabe" target="1.8" />
+      <module name="ueb1-spring-server-vorgabe (1)" target="1.8" />
+      <module name="ueb2-server-vorgabe" target="1.8" />
+      <module name="ueb2-spring-server-loesung" target="1.8" />
+      <module name="ueb2-spring-server-vorgabe" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

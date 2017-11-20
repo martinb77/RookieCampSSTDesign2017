@@ -1,0 +1,6044 @@
+swagger: '2.0'
+info:
+  description: |-
+    OpenInformer is a billing and clearing system, implemented by the bill - X GmbH. For more information see the System Design
+
+    ## Links
+    * error examples [ErrorExamples](/oibilling/errorExample.html)
+    * ChangeLog [ChangeLog](/oibilling/changelog.html)
+    * Swagger - json [Swagger - json](/oibilling/swagger.json)
+    * Swagger - yaml [Swagger - yaml](/oibilling/swagger.yaml)
+
+    ## Expand
+    Muliple expands can be provided with comma seperated stringsA URI with a expand Query Option indicates that Entries associated with the Entry or Collection of Entries identified by the Resource Path section of the URI must be represented inline (i.e. eagerly loaded).
+    If you want to identify an invoice and its invoiceDetails, you could use two URIs (and execute two requests),
+    one for /invoices and one for /invoices/{invoiceNo}/details.
+    The 'expand' option allows you to identify related Entries with a single URI such that a graph of Entries could be retrieved with a single HTTP request.
+
+    ## The following table gives examples on use cases involving entity resources
+    Use case | HTTP request method | HTTP request body | HTTP response status | HTTP response body
+    --- | --- | --- | --- | ---
+    Update an entity instance data | POST | The complete updated entity data (not partial updates) | 200 OK: Successful | The updated entity data (unsually the same as for a GET request)
+    Create a new entity instance | POST | The entity data | 201 Created: Successful. Insert a Location header that contains the URI of the new resource instance | The entity data (unsually the same as for a GET request of the new resource instance)
+    Trigger specific business transactions | POST | The (pseudo-)entity data | 200,201,204 | The response (pseudo-)entity data if status not 204
+
+    ## ErrorExamples
+    HTTP Code | Code | Type | Message | Example
+    --- | --- | --- | --- | ---
+    403 | A-GE-00001 | AUTHENTICATION | FORBIDDEN - The api key is not valid | ``` {"code": "A-GE-00001","field": "apiKey","message": "A-GE-00001 FORBIDDEN - The api key is not valid","token": "42b1aafe-eda3-4947-817c-145c3a197b48","type": "AUTHENTICATION"} ```
+  version: 1.3.1
+  title: OIBilling API
+  termsOfService: 'http://www.bill-x.de/terms/'
+  contact:
+    name: Nils Altekruse
+    url: 'http://www.bill-x.de'
+    email: nils.altekruse@bill-x.de
+  license:
+    name: bill-X GmbH
+    url: 'http://www.bill-x.de'
+host: 'localhost'
+basePath: /oibilling/resources/
+tags:
+  - name: Billing
+    description: Operations about Invoice
+  - name: Client
+    description: Operations about Client
+  - name: Contract
+    description: Operations about Contract
+  - name: Inventory
+    description: Operations about Asset
+  - name: Masterdata
+    description: Operations about BusinessObjects e.g. Customer
+  - name: Store
+    description: Access to Store
+  - name: storeBasket
+    description: Access to Store Basket - deprecated for 2017T2
+schemes:
+  - http
+  - https
+paths:
+  /v1/billing/invoices:
+    get:
+      tags:
+        - Billing
+      summary: Get invoices by BusinessObject
+      description: Get list of requested processed invoices and credit notes for a BusinessObject.
+      operationId: invoiceGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: bo_no
+          in: query
+          description: Unique internal Identifier for the BusinessObject
+          required: false
+          type: integer
+          format: int64
+        - name: sequence
+          in: query
+          description: The number of sequence
+          required: false
+          type: integer
+          default: 1
+          minimum: 1
+          format: int64
+        - name: order_id
+          in: query
+          description: The orderId of purchase - Muliple orderIds can be provided with comma seperated strings
+          required: false
+          type: string
+        - name: expand
+          in: query
+          description: expand by - Muliple expands can be provided with comma seperated strings
+          required: false
+          type: string
+          default: InvoiceDetails
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/InvoiceContainer'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/billing/invoices/{invoiceNo}/creditnotes':
+    post:
+      tags:
+        - Billing
+      summary: Place an creditnote for an invoice
+      description: Place an creditnote for an invoice
+      operationId: creditNotePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: invoiceNo
+          in: path
+          description: Unique Identifier for the Invoice
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: InsertCreditNote object that needs to be insert a new CreditNote
+          required: false
+          schema:
+            $ref: '#/definitions/InsertCreditNote'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Invoice'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/billing/invoices/{invoiceNo}/details':
+    get:
+      tags:
+        - Billing
+      summary: Get invoice details by invoice no
+      description: Get invoice details by invoice no
+      operationId: invoiceDetailGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: invoiceNo
+          in: path
+          description: Unique Identifier for the Invoice
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/InvoiceDetailsContainer'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/billing/paymentstatus:
+    get:
+      tags:
+        - Billing
+      summary: Get PaymentStatus
+      description: Get PaymentStatus for purchase
+      operationId: paymentStatusGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: order_id
+          in: query
+          description: The orderId of purchase - Muliple orderIds can be provided with comma seperated strings
+          required: false
+          type: string
+        - name: oi_global_id
+          in: query
+          description: OI global id. If the global id defined for OI objects - For example a account/contract/serviceBundel ID
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/PaymentStatusContainer'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/client/clients:
+    post:
+      tags:
+        - Client
+      summary: Create/Update client
+      description: Create/Update client
+      operationId: clientPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Client object
+          required: true
+          schema:
+            $ref: '#/definitions/Client'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Client'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/Client'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/clients/{clientId}':
+    get:
+      tags:
+        - Client
+      summary: Get client by id
+      description: Get client by id
+      operationId: clientGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: clientId
+          in: path
+          description: Unique Identifier for the Client
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Client'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/clients/{clientId}/companycodes':
+    post:
+      tags:
+        - Client
+      summary: Create/Update CompanyCode
+      description: Create/Update CompanyCode
+      operationId: companyCodePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: clientId
+          in: path
+          description: Unique Identifier for the Client
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: CompanyCode object
+          required: true
+          schema:
+            $ref: '#/definitions/CompanyCode'
+      responses:
+        '200':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/CompanyCode'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/CompanyCode'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/clients/{clientId}/companycodes/{companyCodeId}':
+    get:
+      tags:
+        - Client
+      summary: Get CompanyCode for Client
+      description: Get CompanyCode for Client
+      operationId: companyCodeForClientGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: clientId
+          in: path
+          description: Unique Identifier for the Client
+          required: true
+          type: string
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/CompanyCode'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/clients/{clientId}/companycodes/{companyCodeId}/invoicetemplates':
+    get:
+      tags:
+        - Client
+      summary: Get InvoiceTemplate for CompanyCode
+      description: Get InvoiceTemplate for CompanyCode
+      operationId: invoiceTemplateForCompanyCodeGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: clientId
+          in: path
+          description: Unique Identifier for the Client
+          required: true
+          type: string
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/InvoiceTemplate'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Client
+      summary: Create/Update InvoiceTemplate
+      description: Create/Update InvoiceTemplate
+      operationId: invoiceTemplatePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: clientId
+          in: path
+          description: Unique Identifier for the Client
+          required: true
+          type: string
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: InvoiceTemplate object
+          required: true
+          schema:
+            $ref: '#/definitions/InvoiceTemplate'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/InvoiceTemplate'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/InvoiceTemplate'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/clients/{clientId}/companycodes/{companyCodeId}/invoicetemplates/{invTmplNo}/invoicetemplatestate':
+    get:
+      tags:
+        - Client
+      summary: Get InvoiceTemplateState for InvoiceTemplate
+      description: Get InvoiceTemplateState for InvoiceTemplate
+      operationId: invoiceTemplateStateForInvoiceTemplateGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: clientId
+          in: path
+          description: Unique Identifier for the Client
+          required: true
+          type: string
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: invTmplNo
+          in: path
+          description: Unique Identifier for the (Smart-)InvoiceTemplate
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/InvoiceTemplateState'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Client
+      summary: Create/Update InvoiceTemplateState
+      description: Create/Update InvoiceTemplateState
+      operationId: invoiceTemplateStatePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: clientId
+          in: path
+          description: Unique Identifier for the Client
+          required: true
+          type: string
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: invTmplNo
+          in: path
+          description: Unique Identifier for the (Smart-)InvoiceTemplate
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: InvoiceTemplateState object
+          required: true
+          schema:
+            $ref: '#/definitions/InvoiceTemplateState'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/InvoiceTemplateState'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/InvoiceTemplateState'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/companycodes/{companyCodeId}/assets':
+    get:
+      tags:
+        - Inventory
+      summary: Get Asset by filter
+      description: Get Asset by filter
+      operationId: assetGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: visible_id_1
+          in: query
+          description: visibleId1 to filter by
+          required: false
+          type: string
+        - name: master_id
+          in: query
+          description: masterId to filter by
+          required: false
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/AssetContainer'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Inventory
+      summary: Create/Update Asset
+      description: Create/Update Asset
+      operationId: assetPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Asset object
+          required: true
+          schema:
+            $ref: '#/definitions/Asset'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Asset'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/Asset'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/companycodes/{companyCodeId}/assets/{assetId}':
+    get:
+      tags:
+        - Inventory
+      summary: Get Asset by id
+      description: Get Asset by id
+      operationId: assetGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: assetId
+          in: path
+          description: Unique Identifier for the Asset
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Asset'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Inventory
+      summary: Delete Asset
+      description: Delete Asset
+      operationId: assetDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: assetId
+          in: path
+          description: Unique Identifier for the Asset
+          required: true
+          type: string
+      responses:
+        '204':
+          description: successful operation
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/companycodes/{companyCodeId}/contracts/{contractId}/services':
+    get:
+      tags:
+        - Contract
+      summary: Get ServiceList for contract
+      description: Get ServiceList for contract
+      operationId: serviceGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: contractId
+          in: path
+          description: Unique Identifier (CompanyCode Level) for the Contract
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/ServiceContainer'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Contract
+      summary: Create/Update Service
+      description: Create/Update Service
+      operationId: servicePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: contractId
+          in: path
+          description: Unique Identifier (CompanyCode Level) for the Contract
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Service object
+          required: true
+          schema:
+            $ref: '#/definitions/Service'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/client/companycodes/{companyCodeId}/contracts/{contractId}/services/{serviceId}':
+    get:
+      tags:
+        - Contract
+      summary: Get Service for contract
+      description: Get Service for contract
+      operationId: serviceGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: contractId
+          in: path
+          description: Unique Identifier (CompanyCode Level) for the Contract
+          required: true
+          type: string
+        - name: serviceId
+          in: path
+          description: Unique Identifier (CompanyCode Level) for the Service
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Contract
+      summary: Delete Service for contract
+      description: Delete Service for contract
+      operationId: serviceDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: contractId
+          in: path
+          description: Unique Identifier (CompanyCode Level) for the Contract
+          required: true
+          type: string
+        - name: serviceId
+          in: path
+          description: Unique Identifier (CompanyCode Level) for the Service
+          required: true
+          type: string
+      responses:
+        '204':
+          description: 'OK: Successful'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/contract/contracts:
+    get:
+      tags:
+        - Contract
+      summary: Get contract list by filter
+      description: Get contract list by filter
+      operationId: contractGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: bo_no
+          in: query
+          description: Unique internal Identifier for the BusinessObject
+          required: false
+          type: string
+        - name: company_code_id
+          in: query
+          description: Unique Identifier for the CompanyCode
+          required: false
+          type: string
+        - name: contract_id
+          in: query
+          description: Unique Identifier (CompanyCode Level) for the Contract
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Contract'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Contract
+      summary: Create/Update Contract
+      description: Create/Update Contract
+      operationId: contractPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Contract object
+          required: true
+          schema:
+            $ref: '#/definitions/Contract'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Contract'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/Contract'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/contract/contracts/{contractNo}':
+    get:
+      tags:
+        - Contract
+      summary: Get Contract by no
+      description: Get Contract by no
+      operationId: contractGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: contractNo
+          in: path
+          description: Unique Identifier for the Contract
+          required: true
+          type: integer
+          format: int64
+        - name: expand
+          in: query
+          description: expand by - Muliple expands can be provided with comma seperated strings
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Contract'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Contract
+      summary: Delete Contract by no
+      description: Delete Contract by no
+      operationId: contractDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: contractNo
+          in: path
+          description: Unique Identifier for the Contract
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: 'OK: Successful'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/contract/contracts/{contractNo}/chargingdata':
+    get:
+      tags:
+        - Contract
+      summary: Get ChargingData for a Contract by contractNo
+      description: Get ChargingData for a Contract by contractNo
+      operationId: chargingDataForContractGetList
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: contractNo
+          in: path
+          description: Unique Identifier for the Contract
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChargingData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Contract
+      summary: Create ChargingData for a Contract with contractNo
+      description: Create ChargingData for a Contract with contractNo
+      operationId: chargingDataForContractPost
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: contractNo
+          in: path
+          description: Unique Identifier for the Contract
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: List of ChargingData to be created for a Contract
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChargingData'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChargingData'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChargingData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/contract/contracts/{contractNo}/services':
+    post:
+      tags:
+        - Contract
+      summary: Create/Update Service
+      description: Create/Update Service
+      operationId: servicePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: contractNo
+          in: path
+          description: Unique Identifier for the Contract
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: Service object
+          required: true
+          schema:
+            $ref: '#/definitions/Service'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/contract/contracts/{contractNo}/services/{serviceNo}':
+    get:
+      tags:
+        - Contract
+      summary: Get Service for contract
+      description: Get Service for contract
+      operationId: serviceGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: contractNo
+          in: path
+          description: Unique Identifier for the Contract
+          required: true
+          type: integer
+          format: int64
+        - name: serviceNo
+          in: path
+          description: Unique Identifier for the Service
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/contract/services:
+    get:
+      tags:
+        - Contract
+      summary: Get ServiceList
+      description: Get ServiceList
+      operationId: serviceGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: company_code_id
+          in: query
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+        - name: order_id
+          in: query
+          description: The orderId of purchase - Muliple orderIds can be provided with comma seperated strings
+          required: false
+          type: string
+        - name: service_id
+          in: query
+          description: Unique Identifier (CompanyCode Level) for the Service
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/ServiceContainer'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Contract
+      summary: Create/Update Service
+      description: Create/Update Service
+      operationId: servicePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Service object
+          required: true
+          schema:
+            $ref: '#/definitions/Service'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/contract/services/{serviceNo}':
+    get:
+      tags:
+        - Contract
+      summary: Get Service
+      description: Get Service
+      operationId: serviceGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: serviceNo
+          in: path
+          description: Unique Identifier for the Service
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Service'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Contract
+      summary: Delete Service
+      description: Delete Service
+      operationId: serviceDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: serviceNo
+          in: path
+          description: Unique Identifier for the Service
+          required: true
+          type: string
+      responses:
+        '204':
+          description: 'OK: Successful'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/inventory/assets:
+    get:
+      tags:
+        - Inventory
+      summary: Get Asset by filter
+      description: Get Asset by filter
+      operationId: assetGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: company_code_id
+          in: query
+          description: Unique Identifier for the CompanyCode
+          required: false
+          type: string
+        - name: visible_id_1
+          in: query
+          description: visibleId1 to filter by
+          required: false
+          type: string
+        - name: master_id
+          in: query
+          description: masterId to filter by
+          required: false
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/AssetContainer'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Inventory
+      summary: Create/Update Asset
+      description: Create/Update Asset
+      operationId: assetPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Asset object
+          required: true
+          schema:
+            $ref: '#/definitions/Asset'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Asset'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/Asset'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/inventory/assets/{assetNo}':
+    get:
+      tags:
+        - Inventory
+      summary: Get Asset by no
+      description: Get Asset by no
+      operationId: assetGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: assetNo
+          in: path
+          description: Unique Identifier for the Asset
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Asset'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Inventory
+      summary: Delete Asset
+      description: Delete Asset
+      operationId: assetDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: assetNo
+          in: path
+          description: Unique Identifier for the Asset
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: successful operation
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/masterdata/businessobjects:
+    post:
+      tags:
+        - Masterdata
+      summary: Create/Update BusinessObject
+      description: Create/Update BusinessObject
+      operationId: businessObjectPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: BusinessObject object
+          required: true
+          schema:
+            $ref: '#/definitions/BusinessObject'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/BusinessObject'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/BusinessObject'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/masterdata/businessobjects/tasks:
+    post:
+      tags:
+        - Masterdata
+      summary: Create a task for BusinessObject
+      description: Create a task for BusinessObject
+      operationId: businessObjectsTasks
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Task object
+          required: true
+          schema:
+            $ref: '#/definitions/Task'
+      responses:
+        '204':
+          description: successful operation
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/masterdata/businessobjects/{boNo}':
+    get:
+      tags:
+        - Masterdata
+      summary: Get BusinessObject by no
+      description: Get BusinessObject by no
+      operationId: businessObjectGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - name: expand
+          in: query
+          description: expand by - Muliple expands can be provided with comma seperated strings
+          required: false
+          type: string
+          default: 'AddressDatas,PaymentDatas'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/BusinessObject'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Masterdata
+      summary: Delete BusinessObject by no
+      description: Delete BusinessObject by no
+      operationId: businessObjectDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: successful operation
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/masterdata/businessobjects/{boNo}/addressdata':
+    get:
+      tags:
+        - Masterdata
+      summary: Get addressData list for businessObject
+      description: Get addressData list for businessObject
+      operationId: addressDataForBOGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AddressData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Masterdata
+      summary: Create/Update AddressData
+      description: Create/Update AddressData
+      operationId: addressDataPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: AddressData object
+          required: true
+          schema:
+            $ref: '#/definitions/AddressData'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/AddressData'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/AddressData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/masterdata/businessobjects/{boNo}/addressdata/{addressNo}':
+    get:
+      tags:
+        - Masterdata
+      summary: Get addressdata by no
+      description: Get addressdata by no
+      operationId: addressDataForBOGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - name: addressNo
+          in: path
+          description: Unique Identifier for the AddressData
+          required: true
+          type: integer
+          format: int64
+        - name: expand
+          in: query
+          description: expand by - Muliple expands can be provided with comma seperated strings
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/AddressData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Masterdata
+      summary: Delete addressdata by no
+      description: Delete addressdata by no
+      operationId: addressDataDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - name: addressNo
+          in: path
+          description: Unique Identifier for the AddressData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: successful operation
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/masterdata/businessobjects/{boNo}/paymentdata':
+    get:
+      tags:
+        - Masterdata
+      summary: Get paymentData list for businessObject
+      description: Get paymentData list for businessObject
+      operationId: paymentDataForBOGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PaymentData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Masterdata
+      summary: Create/Update PaymentData
+      description: Create/Update PaymentData
+      operationId: paymentDataPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: PaymentData object
+          required: true
+          schema:
+            $ref: '#/definitions/PaymentData'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/PaymentData'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/PaymentData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/masterdata/businessobjects/{boNo}/paymentdata/{paymentNo}':
+    get:
+      tags:
+        - Masterdata
+      summary: Get paymentdata by no
+      description: Get paymentdata by no
+      operationId: paymentDataForBOGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - name: paymentNo
+          in: path
+          description: Unique Identifier for the PaymentData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/PaymentData'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Masterdata
+      summary: Delete paymentdata by no
+      description: Delete paymentdata by no
+      operationId: paymentDataDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - name: paymentNo
+          in: path
+          description: Unique Identifier for the PaymentData
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: successful operation
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/masterdata/businessobjects/{boNo}/smartinvoicetemplates':
+    get:
+      tags:
+        - Masterdata
+      summary: Get smartInvoiceTemplate list for businessObject
+      description: Get smartInvoiceTemplate list for businessObject
+      operationId: smartInvoiceTemplateForBOGetList
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SmartInvoiceTemplate'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    post:
+      tags:
+        - Masterdata
+      summary: Create/Update SmartInvoiceTemplate
+      description: Create/Update SmartInvoiceTemplate
+      operationId: smartInvoiceTemplatePost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - in: body
+          name: body
+          description: SmartInvoiceTemplate object
+          required: true
+          schema:
+            $ref: '#/definitions/SmartInvoiceTemplate'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/SmartInvoiceTemplate'
+        '201':
+          description: 'Created: Successful'
+          schema:
+            $ref: '#/definitions/SmartInvoiceTemplate'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/masterdata/businessobjects/{boNo}/smartinvoicetemplates/{invTmplNo}':
+    get:
+      tags:
+        - Masterdata
+      summary: Get SmartInvoiceTemplate by no
+      description: Get SmartInvoiceTemplate by no
+      operationId: smartInvoiceTemplateForBOGet
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - name: invTmplNo
+          in: path
+          description: Unique Identifier for the (Smart-)InvoiceTemplate
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/SmartInvoiceTemplate'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+    delete:
+      tags:
+        - Masterdata
+      summary: Delete smartinvoicetemplate by no
+      description: Delete smartinvoicetemplate by no
+      operationId: smartInvoiceTemplateDelete
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: boNo
+          in: path
+          description: Unique internal Identifier for the BusinessObject
+          required: true
+          type: integer
+          format: int64
+        - name: invTmplNo
+          in: path
+          description: Unique Identifier for the (Smart-)InvoiceTemplate
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: successful operation
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  '/v1/offerbrowsing/{companyCodeId}/storebasket':
+    get:
+      tags:
+        - storeBasket
+      summary: Get store basket
+      description: Get store basket
+      operationId: storeBasket
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: companyCodeId
+          in: path
+          description: Unique Identifier for the CompanyCode
+          required: true
+          type: string
+          x-example: DE_BM_00
+        - name: productCodes
+          in: query
+          description: 'Product code - The productCodes or offerCodes are required. Format: comma seperated string'
+          required: false
+          type: string
+          x-example: DE_BM_00_CHRG_AssTriTPEGRen012
+        - name: offerCodes
+          in: query
+          description: 'Offer code - The productCodes or offerCodes are required. Format: comma seperated string'
+          required: false
+          type: string
+          x-example: DE_BM_00_OE_VoucherTrial012
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/StoreBasket'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+      deprecated: true
+  /v1/store/cart:
+    post:
+      tags:
+        - Store
+      summary: Calculate store cart
+      description: |
+        The client calls the operation [cart] within the service [store] of the Billing API to request prices from OI. OI calculates the prices (line item level and for the overall cart) and sends the formatted prices.
+        Important:
+        1.) If the price request takes place by the client without a referenceDate, the referenceDate (local time of Company) is set from OI.
+        2.) If the price request takes place by the client including a referenceDate, that referenceDate is also used for the price request from OI at Catalog.
+      operationId: getStoreCart
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Cart object are required
+          required: true
+          schema:
+            $ref: '#/definitions/Cart'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Cart'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '428':
+          description: Precondition required
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/store/orders:
+    post:
+      tags:
+        - Store
+      summary: Create order
+      description: |-
+        The operation is called after the customer has finally submitted the order during the checkout process
+
+        Set the packageNo or packageName for subordinate the order under a ServicePackage
+      operationId: orderPost
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Order object are required
+          required: true
+          schema:
+            $ref: '#/definitions/Order'
+      responses:
+        '204':
+          description: 'OK: Successful'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '428':
+          description: Precondition required
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+  /v1/store/privatecart:
+    post:
+      tags:
+        - Store
+      summary: see cart desc
+      description: see cart desc
+      operationId: getStorePrivateCart
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Cart object are required
+          required: true
+          schema:
+            $ref: '#/definitions/Cart'
+      responses:
+        '200':
+          description: 'OK: Successful'
+          schema:
+            $ref: '#/definitions/Cart'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '428':
+          description: Precondition required
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - billing_api_auth: []
+        - apiKey: []
+      deprecated: true
+securityDefinitions:
+  apiKey:
+    type: apiKey
+    name: apiKey
+    in: header
+  billing_api_auth:
+    type: basic
+definitions:
+  AddressData:
+    type: object
+    required:
+      - boNo
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      'no':
+        type: integer
+        format: int64
+        example: 42
+        description: Meta data that is set by the server. The internal OI identifier for this AddressData.
+        readOnly: true
+      addressId:
+        type: string
+        example: customer_42
+        description: Data that is not set by the server but from a corresponding component. ID of the address information
+      addressType:
+        type: string
+        example: customer
+        description: 'Type of the address information: billing = billing receiver, delivery = shipping address. Defines the type of address, to which the data set should be used for.'
+      extRef:
+        type: string
+        example: 39ff5680-e3b0-11e6-bf01-fe55135034f3
+        description: Additional reference from an external system. Used to identify the reference of a data set in a corresponding system or database.
+      extDesc:
+        type: string
+        example: 53218430-e3b0-11e6-bf01-fe55135034f3
+        description: External description (free-text). Could be used to add further information from a corresponding system.
+      boNo:
+        type: integer
+        format: int64
+        example: 1235
+        description: Meta data that is set by the server. ID of the BusinessObject information. Connection of the address data set to a business object.
+      businessAddress:
+        type: boolean
+        example: false
+        description: Information on if the customer is using the service from a business perspective instead of a private person as a customer.
+      email:
+        type: string
+        example: info@bill-x.de
+        description: E-mail address of the customer
+      email2:
+        type: string
+        example: info@bill-x.de
+        description: Alternative e-mail address of the customer
+      phone:
+        type: string
+        example: +49 541-71008-0
+        description: Phone number of the customer
+      phone2:
+        type: string
+        example: +49 541-71008-100
+        description: Alternative phone number of the customer
+      mobile:
+        type: string
+        example: +49 541-71008-0
+        description: Mobile phone number of the customer
+      mobile2:
+        type: string
+        example: +49 541-71008-100
+        description: Alternative mobile phone number of the customer
+      fax:
+        type: string
+        example: +49 541-71008-299
+        description: Fax number of the customer
+      fax2:
+        type: string
+        example: +49 541-71008-299
+        description: Alternative fax number of the customer
+      title:
+        type: string
+        example: Mr.
+        description: Academic title
+      title2:
+        type: string
+        example: Mrs.
+        description: Additional academic title
+      supplement:
+        type: string
+        example: Sr.
+        description: Addition to the name
+      supplement2:
+        type: string
+        description: Further addition to the name
+      salutation:
+        type: string
+        example: Mr.
+        description: Salutation
+      salutation2:
+        type: string
+        example: Mrs.
+        description: Further salutation
+      firstName:
+        type: string
+        example: Mary
+        description: First name
+      firstName2:
+        type: string
+        example: R.
+        description: additional first name
+      middleName:
+        type: string
+        example: Ann
+        description: Middle name
+      name:
+        type: string
+        example: Taylor
+        description: Surname
+      name2:
+        type: string
+        example: Thompson
+        description: Further surname
+      birthName:
+        type: string
+        example: Thompson
+        description: Birth name
+      companyTitle:
+        type: string
+        example: NGO
+        description: Title of the company
+      company:
+        type: string
+        example: bill-X GmbH
+        description: Name of the company
+      company2:
+        type: string
+        example: Collect. Manage. Execute.
+        description: Addition to the name of the company
+      initials:
+        type: string
+        example: MT
+        description: Initials
+      nickname:
+        type: string
+        example: maryann
+        description: Nickname
+      preferredName:
+        type: string
+        example: Ann
+        description: Preferred name
+      addressLine1:
+        type: string
+        example: bill-X GmbH
+        description: Additional information for divergent delivery and customer addresses.
+      addressLine2:
+        type: string
+        example: Möserstraße 34
+        description: Field for things like suite numbers and apartment numbers or other less standard identifiers.
+      addressLine3:
+        type: string
+        example: D-49074 Osnabrück
+        description: Further details of the address
+      latitude:
+        type: string
+        example: '52.273639'
+        description: Latitude of the address
+      longitude:
+        type: string
+        example: '8.052684'
+        description: Longitude of the address
+      poBox:
+        type: string
+        example: bill-X
+        description: PO Box. Can be used instead of Street or AddressLine1.
+      country:
+        type: string
+        example: Germany
+        description: Name of the country
+      countryCode:
+        type: string
+        example: '49'
+        description: Code of the country
+      state:
+        type: string
+        example: Niedersachsen
+        description: Name of the state
+      county:
+        type: string
+        example: Stadt Osnabrück
+        description: Name of the county
+      city:
+        type: string
+        example: Osnabrück
+        description: Name of the city
+      postCode:
+        type: string
+        example: '49074'
+        description: Post code of the city
+      region:
+        type: string
+        example: Osnabrücker Land
+        description: Region
+      district:
+        type: string
+        example: Innenstadt
+        description: District
+      street:
+        type: string
+        example: Möserstraße
+        description: Street name
+      streetNumber:
+        type: string
+        example: '34'
+        description: Street number
+      building:
+        type: string
+        example: Zentrale
+        description: Building
+      department:
+        type: string
+        example: Development
+        description: Department
+      floor:
+        type: string
+        example: '2'
+        description: Floor
+      room:
+        type: string
+        example: '8'
+        description: Room
+      birthplace:
+        type: string
+        example: Osnabrück
+        description: Place of Birth
+      birthDate:
+        type: string
+        format: date-time
+        example: 01.01.1980
+        description: Date of Birth
+      gender:
+        type: string
+        example: female
+        description: Gender
+      nationality:
+        type: string
+        example: german
+        description: Nationality
+      maritalState:
+        type: string
+        example: single
+        description: State of marital
+      note:
+        type: string
+        example: Collect. Manage. Execute.
+        description: Field where additional comments can be placed
+      validFrom:
+        type: string
+        format: date-time
+        description: Start of the validity of the address.
+      validTo:
+        type: string
+        format: date-time
+        description: End of the validity of the address.
+    description: AddressData
+    xml:
+      name: addressData
+  Asset:
+    type: object
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      creator:
+        type: string
+        example: user1167
+        description: The creator of the asset object in OI.
+      'no':
+        type: integer
+        format: int64
+        example: 1354
+        description: The internal OI identifier for the asset.
+      id:
+        type: string
+        example: '3848474'
+        description: 'The external identifier for the asset that is set by the interface client. '
+      domain:
+        description: The domain of the asset where the asset is assigned to. (Client and Company)
+        $ref: '#/definitions/AssetDomain'
+      batch:
+        type: string
+        example: import_20170425
+        description: Identifies the tranche.
+      producedAt:
+        type: string
+        format: date-time
+        description: 'The date where the asset was produced. Hint: Not the time where the asset was created in OI.'
+      visibleId1:
+        type: string
+        example: DE-13848-6
+        description: visibleId1
+      visibleId2:
+        type: string
+        example: '138484'
+        description: visibleId2
+      visibleId3:
+        type: string
+        example: DE-BILLX-ID-3
+        description: visibleId3
+      visibleId4:
+        type: string
+        example: 3d7297f0-e47d-11e6-bf01-fe55135034f3
+        description: visibleId4
+      visibleId5:
+        type: string
+        example: '4384'
+        description: visibleId5
+      visibleId6:
+        type: string
+        example: '14848'
+        description: visibleId6
+      internalId1:
+        type: string
+        example: '138181'
+        description: internalId1
+      internalId2:
+        type: string
+        example: '688688'
+        description: internalId2
+      internalId3:
+        type: string
+        example: billx-42
+        description: internalId3
+      internalId4:
+        type: string
+        example: 3d7297f0-e47d-11e6-bf01-fe55135034f3
+        description: internalId4
+      internalId5:
+        type: string
+        example: DE_BILLX_1234_4587
+        description: internalId5
+      internalId6:
+        type: string
+        example: EVCO34818
+        description: internalId6
+      action:
+        type: string
+        description: Action that can be used to define further tasks.
+      assignedTo:
+        type: string
+        example: '13548'
+        description: assignedTo
+      assignedSince:
+        type: string
+        format: date-time
+        description: assignedSince
+      lockedUntil:
+        type: string
+        format: date-time
+        description: The asset might be logged. The attribute ‘lockedUntil’ contains the date where the asset was locked.
+      lockReason:
+        type: string
+        description: The asset might be logged. The attribute ‘lockReson’ contains the desctipiton of the reason for the locking.
+      locker:
+        type: string
+        example: 3d7297f0-e47d-11e6-bf01-fe55135034f3
+        description: Identifier for the user who locked the asset. For example the support agent.
+    description: Asset
+    xml:
+      name: asset
+  AssetContainer:
+    type: object
+    properties:
+      assets:
+        type: array
+        description: Resource collection for Asset
+        items:
+          xml:
+            name: assets
+          $ref: '#/definitions/Asset'
+    description: AssetContainer
+  AssetDomain:
+    type: object
+    properties:
+      companyCodeId:
+        type: string
+        example: BILLX
+        description: companyCodeId
+      clientId:
+        type: string
+        example: DE
+        description: clientId
+      countryCode:
+        type: string
+        example: DE
+        description: countryCode
+      masterId:
+        type: integer
+        format: int64
+        example: 1
+        description: masterId
+    description: Domain
+    xml:
+      name: domain
+  BankData:
+    type: object
+    properties:
+      iban:
+        type: string
+        example: DE12500105170648489890
+        description: ISO 13616-1. The International Bank Account Number (IBAN) is an internationally agreed system of identifying bank accounts across national borders to facilitate the communication and processing of cross border transactions with a reduced risk of transcription errors.
+      bankBic:
+        type: string
+        example: AABAFI22
+        description: ISO 9362
+      bankCode:
+        type: string
+        example: '42'
+        description: bankCode
+      bankName:
+        type: string
+        example: bill-X Bank
+        description: bankName
+      bankAccountNumber:
+        type: string
+        example: '648484348'
+        description: bankAccountNumber
+      bankOwner:
+        type: string
+        example: Mary Ann Taylor
+        description: bankOwner
+      sepaActive:
+        type: boolean
+        example: true
+        description: sepaActive
+      sepaMandateDate:
+        type: string
+        format: date-time
+        description: sepaMandateDate
+      sepaMandateNumber:
+        type: string
+        description: sepaMandateNumber
+      sepaMandateExpirationDate:
+        type: string
+        format: date-time
+        description: sepaMandateExpirationDate
+    description: BankData
+    xml:
+      name: bankData
+  BusinessObject:
+    type: object
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      'no':
+        type: integer
+        format: int64
+        example: 42
+        description: 'no'
+        readOnly: true
+      id:
+        type: string
+        example: 524a47bc-e474-11e6-bf01-fe55135034f3
+        description: businessObjectId
+      idExt:
+        type: string
+        example: 5bd779d0-e474-11e6-bf01-fe55135034f3
+        description: idExt
+      email:
+        type: string
+        example: info@bill-x.de
+        description: email
+      state:
+        type: integer
+        format: int64
+        example: 0
+        description: status
+      stateTxt:
+        type: string
+        example: 'null'
+        description: stateTxt
+      debitorId:
+        type: string
+        example: D0000042
+        description: debitorId
+      debitorIdExt:
+        type: string
+        example: D0000042
+        description: debitorIdExt
+      note:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: note
+      settings:
+        type: string
+        example: 'showPage:false;'
+        description: settings
+      title:
+        type: string
+        example: Dr.
+        description: titel
+      salutation:
+        type: string
+        example: Mr
+        description: salutation
+      firstName:
+        type: string
+        example: Mary
+        description: firstName
+      middleName:
+        type: string
+        example: Ann
+        description: middleName
+      lastName:
+        type: string
+        example: Thomson
+        description: lastName
+      gender:
+        type: string
+        example: female
+        description: gender
+      birthday:
+        type: string
+        format: date-time
+        description: birthday
+      company:
+        type: string
+        example: bill-X GmbH
+        description: company
+      company2:
+        type: string
+        example: Collect. Manage. Execute.
+        description: company2
+      taxNumber:
+        type: string
+        example: DE123456789
+        description: taxNumber
+      ustId:
+        type: string
+        example: DE123456789
+        description: ustId
+      locale:
+        type: string
+        example: de_DE
+        description: locale
+      timezone:
+        type: string
+        example: Europe/Berlin
+        description: timezone
+      businessObjectDetails:
+        type: array
+        description: businessObjectDetails
+        items:
+          $ref: '#/definitions/MapType'
+      businessObjectType:
+        description: businessObjectType
+        $ref: '#/definitions/BusinessObjectType'
+      domain:
+        description: domain
+        $ref: '#/definitions/BusinessObjectDomain'
+      addressDatas:
+        type: array
+        description: Expand modus - addressDatas
+        items:
+          $ref: '#/definitions/AddressData'
+      paymentDatas:
+        type: array
+        description: Expand modus - paymentDatas
+        items:
+          $ref: '#/definitions/PaymentData'
+    description: BusinessObject
+    xml:
+      name: businessObject
+  BusinessObjectDomain:
+    type: object
+    properties:
+      companyCodeId:
+        type: string
+        example: BILLX
+        description: companyCodeId
+      clientId:
+        type: string
+        example: DE
+        description: clientId
+      groupNo:
+        type: integer
+        format: int64
+        example: 0
+        description: groupNo
+      parentNo:
+        type: integer
+        format: int64
+        example: 0
+        description: parentNo
+      timezone:
+        type: string
+        example: Europe/Berlin
+        description: default timezone of the company
+      locale:
+        type: string
+        example: de_DE
+        description: default locale of the company
+    description: Domain
+    xml:
+      name: domain
+  BusinessObjectType:
+    type: object
+    properties:
+      boRoleId:
+        type: string
+        example: CUSTOMER
+        description: boRoleId
+      businessCustomer:
+        type: boolean
+        example: false
+        description: businessCustomer
+    description: BusinessObjectType
+    xml:
+      name: businessObjectType
+  Cart:
+    type: object
+    required:
+      - companyCodeId
+    properties:
+      companyCodeId:
+        type: string
+        example: DE_BM_00
+        description: companyCodeId
+      boIdExt:
+        type: string
+        example: 5bd779d0-e474-11e6-bf01-fe55135034f3
+        description: boIdExt
+      referenceDate:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: referenceDate
+      cartItems:
+        type: array
+        description: cartItems
+        items:
+          $ref: '#/definitions/CartItem'
+      price:
+        description: price
+        $ref: '#/definitions/CartPrice'
+      originalPrice:
+        description: originalPrice
+        $ref: '#/definitions/CartPrice'
+      reducedPrice:
+        description: Delta price between originalPrice and price
+        $ref: '#/definitions/ReducedPrice'
+      discountActive:
+        type: boolean
+        description: discountActive
+      discounts:
+        type: array
+        description: Discount details e.g. discount code
+        items:
+          $ref: '#/definitions/Discount'
+      redeemDiscounts:
+        type: array
+        description: Redeem discount codes
+        items:
+          $ref: '#/definitions/DiscountRedeem'
+    description: Cart
+    xml:
+      name: cart
+  CartItem:
+    type: object
+    required:
+      - code
+    properties:
+      tariffId:
+        type: string
+        example: DE_BM_00
+        description: tariffId
+      serviceType:
+        type: string
+        example: Offer
+        description: serviceType
+      code:
+        type: string
+        example: DE_BM_00_OFFER_001
+        description: code
+      additionalAttributes:
+        type: array
+        description: additionalAttributes
+        items:
+          $ref: '#/definitions/MapType'
+      price:
+        description: price
+        $ref: '#/definitions/FormattedPrice'
+      originalPrice:
+        description: originalPrice
+        $ref: '#/definitions/FormattedPrice'
+      reducedPrice:
+        description: Delta price between originalPrice and price
+        $ref: '#/definitions/ReducedPrice'
+      discountActive:
+        type: boolean
+        description: discountActive
+      discounts:
+        type: array
+        description: Discount details e.g. discount code
+        items:
+          $ref: '#/definitions/Discount'
+    description: CartItem
+    xml:
+      name: cartItem
+  CartPrice:
+    type: object
+    properties:
+      currencyCode:
+        type: string
+        example: EUR
+        description: ISO-4217 currency code e.g. EUR
+      netAmount:
+        type: number
+        example: 16.8
+        description: net price amount e.g. 16.80
+      grossAmount:
+        type: number
+        example: 19.99
+        description: gross price amount e.g. 19.99
+      taxAmount:
+        type: number
+        example: 3.19
+        description: tax amount e.g. 3.19
+      formattedNetAmount:
+        type: string
+        example: '16,80 EUR'
+        description: 'formatted net price amount e.g. 16,80 EUR'
+      formattedGrossAmount:
+        type: string
+        example: '19,99 EUR'
+        description: 'formatted gross price amount e.g. 19,99 EUR'
+      formattedTaxAmount:
+        type: string
+        example: '3,19 EUR'
+        description: 'formatted tax price amount e.g. 3,19 EUR'
+      taxDetails:
+        type: array
+        items:
+          $ref: '#/definitions/FormattedPrice'
+    description: 'price information (currency code, net price, gross price, tax, tax rate) and with formatted price'
+  ChargingData:
+    type: object
+    properties:
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not generate the object.'
+      'no':
+        type: integer
+        format: int64
+      externRef:
+        type: string
+      contractNo:
+        type: integer
+        format: int64
+      origContractNo:
+        type: integer
+        format: int64
+      boNo:
+        type: integer
+        format: int64
+      code:
+        type: string
+      groupCode:
+        type: string
+      category:
+        type: string
+      connection:
+        type: string
+      group:
+        type: string
+      subgroup:
+        type: string
+      name:
+        type: string
+      accountDate:
+        type: string
+        format: date-time
+      accountTime:
+        type: string
+        format: date-time
+      amountCurrency:
+        type: integer
+        format: int64
+      assetId:
+        type: string
+      basePrice:
+        type: number
+      countryCode:
+        type: string
+      ctrlAccNr:
+        type: integer
+        format: int64
+      currencyCode:
+        type: string
+      dateMY:
+        type: string
+      chargingDataDetails:
+        type: array
+        items:
+          $ref: '#/definitions/MapType'
+      imported:
+        type: integer
+        format: int64
+      inputDate:
+        type: string
+        format: date-time
+      invoicePk:
+        type: integer
+        format: int64
+      ip:
+        type: number
+      ipTxt:
+        type: string
+      isBillable:
+        type: integer
+        format: int64
+      isDeferredInc:
+        type: integer
+        format: int64
+      isVisible:
+        type: integer
+        format: int64
+      kostenNr:
+        type: integer
+        format: int64
+      manuallyCreated:
+        type: integer
+        format: int64
+      mappingNr:
+        type: integer
+        format: int64
+      moduleDone:
+        type: integer
+        format: int64
+      moduleNr:
+        type: integer
+        format: int64
+      netIp:
+        type: string
+      orderId:
+        type: string
+      pcuNr:
+        type: integer
+        format: int64
+      productType:
+        type: string
+      promotionCodeNr:
+        type: integer
+        format: int64
+      salesAmountCurrency:
+        type: integer
+        format: int64
+      salesTotalAmount:
+        type: number
+      servicePk:
+        type: integer
+        format: int64
+      serviceSubgroup:
+        type: integer
+        format: int64
+      sourceChargeNr:
+        type: integer
+        format: int64
+      sourceInvoiceDetailNr:
+        type: integer
+        format: int64
+      sourceInvoiceNr:
+        type: integer
+        format: int64
+      surchargePrice:
+        type: number
+      taxCode:
+        type: string
+      timeFrom:
+        type: string
+        format: date-time
+      timeTill:
+        type: string
+        format: date-time
+      totalAmount:
+        type: number
+      type:
+        type: integer
+        format: int64
+      unit:
+        type: string
+      unit2:
+        type: string
+      unit3:
+        type: string
+      unit4:
+        type: string
+      vat:
+        type: number
+      volume:
+        type: number
+      volume2:
+        type: number
+      volume3:
+        type: number
+      volume4:
+        type: number
+    description: ChargingData
+    xml:
+      name: chargingData
+  Client:
+    type: object
+    required:
+      - id
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      id:
+        type: string
+        example: DE
+        description: id
+      extRef:
+        type: string
+        example: DE
+        description: Additional reference to an external system
+      defaultClient:
+        type: boolean
+        example: true
+        description: defaultClient
+      email:
+        type: string
+        example: info@bill-x.de
+        description: E-mail address
+      company:
+        type: string
+        example: bill-X GmbH
+        description: Company name
+      postCode:
+        type: string
+        example: '49074'
+        description: Post code
+      city:
+        type: string
+        example: Osnabrück
+        description: City name
+      street:
+        type: string
+        example: Möserstr.
+        description: Street name
+      streetNo:
+        type: string
+        example: '34'
+        description: Street number
+      url:
+        type: string
+        example: 'http://www.bill-x.de'
+        description: url
+      phone:
+        type: string
+        example: +49 541-71008-0
+        description: Phone number
+      fax:
+        type: string
+        example: +49 541-71008-299
+        description: Fax number
+      clientDetails:
+        type: array
+        description: Contains project specific client details information
+        items:
+          $ref: '#/definitions/MapType'
+      contractIdSequence:
+        type: integer
+        format: int64
+        example: 50
+        description: Client wide sequential contract id
+      useExternalIdModule:
+        type: boolean
+        example: false
+        description: useExternalIdModule
+      invoiceIDConfiguration:
+        description: invoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      simInvoiceIDConfiguration:
+        description: simInvoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      internalInvoiceIDConfiguration:
+        description: internalInvoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      internalSimInvoiceIDConfiguration:
+        description: internalSimInvoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      useCreditNoteIDConfiguration:
+        type: boolean
+        example: true
+        description: useCreditNoteIDConfiguration
+      creditNoteIDConfiguration:
+        description: creditNoteIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      internalCreditNoteIDConfiguration:
+        description: internalCreditNoteIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+    description: Client
+    xml:
+      name: client
+  CompanyCode:
+    type: object
+    required:
+      - id
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      id:
+        type: string
+        example: BILLX
+        description: Id of the CompanyCode
+      clientId:
+        type: string
+        example: DE
+        description: Client id
+      channel:
+        type: string
+        example: internal
+        description: channel
+      activateBilling:
+        type: boolean
+        example: true
+        description: activateBilling
+      activateSimulation:
+        type: boolean
+        description: activateSimulation
+      extRef:
+        type: string
+        example: BILLX
+        description: Additional reference to an external system
+      defaultCompanyCode:
+        type: boolean
+        example: false
+        description: determines if the company code is marked as default for the correponding client
+      email:
+        type: string
+        example: info@bill-x.de
+        description: Email address
+      company:
+        type: string
+        example: bill-X GmbH
+        description: Name of the company
+      postCode:
+        type: string
+        example: '49074'
+        description: Post code
+      city:
+        type: string
+        example: Osnabrück
+        description: City name
+      region:
+        type: string
+        example: Osnabrücker Land
+        description: Region
+      street:
+        type: string
+        example: Möserstr.
+        description: Street name
+      streetNo:
+        type: string
+        example: '34'
+        description: Street number
+      url:
+        type: string
+        example: 'http://www.bill-x.de'
+        description: url
+      phone:
+        type: string
+        example: +49 541-71008-0
+        description: Phone number
+      fax:
+        type: string
+        example: +49 541-71008-299
+        description: Fax number
+      companyCodeDetails:
+        type: array
+        example: Lorem ipsum
+        description: companyCodeDetails
+        items:
+          $ref: '#/definitions/MapType'
+      defaultLocale:
+        type: string
+        example: de_DE
+        description: Default locale of the respective country
+      defaultTimezone:
+        type: string
+        example: Europe/Berlin
+        description: Refers to the default timezone of the respective country
+      countryCode:
+        type: string
+        example: DE
+        description: Refers to the respective country
+      languageCode:
+        type: string
+        example: de
+        description: Refers to the language of the respective country
+      currencyCode:
+        type: string
+        example: EUR
+        description: Refers to the currency of the respective country
+      initialCustomerCredit:
+        type: number
+        example: 0
+        description: initialCustomerCredit
+      clientInvoiceIdx:
+        type: boolean
+        description: Consecutive billing index if the index is used across all clients
+      useExternalIdModule:
+        type: boolean
+        example: false
+        description: useExternalIdModule
+      invoiceIDConfiguration:
+        description: invoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      simInvoiceIDConfiguration:
+        description: simInvoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      internalInvoiceIDConfiguration:
+        description: internalInvoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      internalSimInvoiceIDConfiguration:
+        description: internalSimInvoiceIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      useCreditNoteIDConfiguration:
+        type: boolean
+        example: true
+        description: useCreditNoteIDConfiguration
+      creditNoteIDConfiguration:
+        description: creditNoteIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+      internalCreditNoteIDConfiguration:
+        description: internalCreditNoteIDConfiguration
+        $ref: '#/definitions/IDConfiguration'
+    description: CompanyCode
+    xml:
+      name: companyCode
+  Contract:
+    type: object
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      creator:
+        type: string
+        example: user1167
+        description: The creator of the asset object in OI.
+      'no':
+        type: integer
+        format: int64
+        example: 42
+        description: OpenInformer primary key for contract
+      id:
+        type: string
+        example: DE*BMW*00112Q*3
+        description: 'Contract id. May, for example, contain an EVCO ID '
+      idExt:
+        type: string
+        example: 684a384e
+        description: Further external id for the contract. Set by the interface client.
+      boNo:
+        type: integer
+        format: int64
+        example: 12345
+        description: Reference to business object which 'owns' this contract.
+      type:
+        type: string
+        example: STANDARD
+        description: Type of contract.
+        enum:
+          - STANDARD
+          - CLIENT
+          - DISCOUNT
+      tariffNo:
+        type: integer
+        format: int64
+        example: 6874
+        description: Reference to the related tariff.
+      invoiceTemplateNo:
+        type: integer
+        format: int64
+        example: 8794
+        description: Reference to the related invoice template.
+      domain:
+        description: 'Domain: Company and client information'
+        $ref: '#/definitions/ContractDomain'
+      name:
+        type: string
+        example: MyContractXY
+        description: 'Product decription/name. Can be changed by the customer. '
+      extRef:
+        type: string
+        example: 43438434-484ae-as2fe24-asf2e4
+        description: 'Additional reference to external systemChargeNow: special meaning: contract description entered by customer'
+      activationDate:
+        type: string
+        format: date-time
+        description: Contract will be activated at this point in time
+      contractDetails:
+        type: array
+        description: Key-value map with contract details
+        items:
+          $ref: '#/definitions/MapType'
+      state:
+        type: string
+        description: Contract state ACTIVE or INACTIVE. Contract can be created with state 'INACTIVE' and will not bebilled or in other ways be processed until state isset to 'ACTIVE'
+        enum:
+          - ACTIVE
+          - INACTIVE
+      locked:
+        type: boolean
+        description: 'Contract is locked, so customer can not use/access this product. May be set e.g. due to missing payment.'
+      accountLocked:
+        type: boolean
+        description: Account is locked. Project specific. For example if product is related to an account and that account is locked for too many wrong login attempts.
+      parentContractNo:
+        type: integer
+        format: int64
+        example: 12484
+        description: Internal no of parent contract for hierarchical contract structures
+      commissionContractNo:
+        type: integer
+        format: int64
+        example: 67468461
+        description: Internal reference to commission contract
+      region:
+        type: string
+        example: Osnabrücker Land
+        description: Contract owner's region. Free / project specific.
+      orderDate:
+        type: string
+        format: date-time
+        description: Date when customer issued the order for this contract / product
+      deliveryAddressId:
+        type: string
+        example: 745a7sd-af4e84-a2sf4e8-684ar
+        description: Reference to delivery address Overrides the delivery address which is set in the contract's invoice template
+      validFrom:
+        type: string
+        format: date-time
+        description: Start date of contract validity
+      validTo:
+        type: string
+        format: date-time
+        description: Termination date of contract validity
+      project:
+        type: string
+        example: Lorem ipsum dolor sit amet
+        description: Free text description of project which the contract belongs to.
+      costcenter:
+        type: string
+        example: CC_08dfe5cb
+        description: CostCenter information for external purpose. Internally cost center is determined by BusinessObject which owns this Contract.
+      extState:
+        type: string
+        example: valid
+        description: External state field for this contract
+      version:
+        type: string
+        example: 1.0.4Beta
+        description: External version field for this contract
+      orderId:
+        type: string
+        example: 6846844-ad438e4-3d43f8e4-34ase
+        description: The orderId identifies the order of the customer.Set by the client who is responsible for the order management
+      note:
+        type: string
+        example: Lorem ipsum
+        description: Field for additional comments
+      product:
+        type: string
+        example: 684a384e
+        description: Description of product
+    description: Contract
+    xml:
+      name: contract
+  ContractDomain:
+    type: object
+    properties:
+      companyCodeId:
+        type: string
+        example: BILLX
+        description: Descriptive ID of the company code
+      clientId:
+        type: string
+        example: DE
+        description: 'Client id: country or market, depending on client configuration'
+      locale:
+        type: string
+        example: de_DE
+        description: Locale of the Contract if deviating from customer locale
+    description: Domain
+    xml:
+      name: domain
+  CreditCardData:
+    type: object
+    properties:
+      type:
+        type: string
+        example: VISA
+        description: Type of the credit card
+      owner:
+        type: string
+        example: Mary Ann Thomson
+        description: Owner of the credit card
+      bankName:
+        type: string
+        example: VISA
+        description: Bank of the credit card
+      number:
+        type: string
+        example: '4242424242424242'
+        description: Number of the credit card
+      checkDigit:
+        type: string
+        example: '123'
+        description: Security Number of the credit card
+      validToMm:
+        type: string
+        example: '12'
+        description: Credit card ist valid until this month
+      validToYyyy:
+        type: string
+        example: '2020'
+        description: Credit card ist valid until this year
+      ackIp:
+        type: string
+        example: private IP Address from end-customer
+        description: IP address form where the credit card data was accepted
+      ackAcceptedAt:
+        type: string
+        format: date-time
+        description: Date when the credit card data was accepted
+    description: CreditCardData
+    xml:
+      name: creditCardData
+  Discount:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Discount code
+      type:
+        type: string
+        description: Discount type e.g. absolute o percentage
+        enum:
+          - ABSOLUTE
+          - PERCENTAGE
+      level:
+        type: string
+        description: Discount level e.g. cart or item
+        enum:
+          - CART
+          - ITEM
+      validFrom:
+        type: string
+        format: date-time
+        description: Valid from Date
+      validTo:
+        type: string
+        format: date-time
+        description: Valid to date
+      value:
+        type: string
+        example: '10'
+        description: Discount value in percentage e.g. 20 (for 20 %) in absolut e.g. 10 (for 10 €)
+      campaignName:
+        type: string
+        example: xmas2018
+        description: Name of campaign
+    description: Discount
+    xml:
+      name: discount
+  DiscountRedeem:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Discount code
+      status:
+        type: string
+        description: Status of discount code e.g. active/inactive
+        enum:
+          - ACTIVE
+          - INACTIVE
+      statusReason:
+        type: string
+        description: statusReason
+        enum:
+          - WRONG_CODE
+          - CAMPAIGN_HAS_RUN_OUT
+          - CAMPAIGN_HAS_NOT_YET_STARTET
+          - MAXIMUM_DISCOUNT_USERS_REACHED
+          - ALREADY_DISCOUNTED_OFFERS
+          - INDIVIDUAL_CODE
+  ErrorResponse:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        example: BUSINESS
+        description: error type e.g. BUSINESS
+        enum:
+          - BUSINESS
+          - UNKNOWN
+          - AUTHENTICATION
+          - VALIDATION
+          - CONNECTION
+          - APPLICATION
+      code:
+        type: string
+        example: B-VAL-00012
+        description: error code e.g. B-VAL-00012
+      message:
+        type: string
+        example: '[B-VAL-00012] [storeBasket] Parameter [productId] is mandatory.'
+        description: Message describing error
+      field:
+        type: string
+        example: productId
+        description: The name of the field which makes problems e.g. productId
+      token:
+        type: string
+        example: ae910634-0e48-11e7-93ae-92361f002671
+        description: Token to find the log entry - UUID
+    description: ErrorResponse
+    xml:
+      name: errorResponse
+  FormattedInvoiceAmount:
+    type: object
+    properties:
+      currencyCode:
+        type: string
+        example: EUR
+        description: ISO-4217 currency code e.g. EUR
+      netAmount:
+        type: number
+        example: 16.8
+        description: net price amount e.g. 16.80
+      grossAmount:
+        type: number
+        example: 19.99
+        description: gross price amount e.g. 19.99
+      taxAmount:
+        type: number
+        example: 3.19
+        description: tax amount e.g. 3.19
+      diffAmount:
+        type: number
+        example: 9.99
+        description: Amount still open
+      payedAmount:
+        type: number
+        example: 10
+        description: Amount already paid from the total amount
+      formattedDiffAmount:
+        type: string
+        example: '9,99 EUR'
+        description: Amount still open - formatted
+      formattedPayedAmount:
+        type: string
+        example: '10,00 EUR'
+        description: Amount already paid from the total amount - formatted
+      formattedNetAmount:
+        type: string
+        example: '16,80 EUR'
+        description: 'formatted net price amount e.g. 16,80 EUR'
+      formattedGrossAmount:
+        type: string
+        example: '19,99 EUR'
+        description: 'formatted gross price amount e.g. 19,99 EUR'
+      formattedTaxAmount:
+        type: string
+        example: '3,19 EUR'
+        description: 'formatted tax price amount e.g. 3,19 EUR'
+    description: Formatted Invoice Amount
+  FormattedPrice:
+    type: object
+    properties:
+      currencyCode:
+        type: string
+        example: EUR
+        description: ISO-4217 currency code e.g. EUR
+      netAmount:
+        type: number
+        example: 16.8
+        description: net price amount e.g. 16.80
+      grossAmount:
+        type: number
+        example: 19.99
+        description: gross price amount e.g. 19.99
+      taxAmount:
+        type: number
+        example: 3.19
+        description: tax amount e.g. 3.19
+      taxRate:
+        type: number
+        example: 19
+        description: tax rate e.g. 19
+      formattedNetAmount:
+        type: string
+        example: '16,80 EUR'
+        description: 'formatted net price amount e.g. 16,80 EUR'
+      formattedGrossAmount:
+        type: string
+        example: '19,99 EUR'
+        description: 'formatted gross price amount e.g. 19,99 EUR'
+      formattedTaxAmount:
+        type: string
+        example: '3,19 EUR'
+        description: 'formatted tax price amount e.g. 3,19 EUR'
+    description: 'price information (currency code, net price, gross price, tax, tax rate) and with formatted price'
+  IDConfiguration:
+    type: object
+    properties:
+      idx:
+        type: integer
+        format: int64
+        example: 0
+        description: idx
+      numberOfDigits:
+        type: integer
+        format: int64
+        example: 8
+        description: numberOfDigits
+      format:
+        type: string
+        example: 'CD{idx}'
+        description: format
+    description: IDConfig
+    xml:
+      name: iDConfig
+  InsertCreditNote:
+    type: object
+    required:
+      - insertCreditNoteItems
+      - invoiceNo
+    properties:
+      invoiceNo:
+        type: integer
+        format: int64
+        example: 42
+        description: InvoiceNo
+      insertCreditNoteItems:
+        type: array
+        description: InsertCreditNoteItems
+        items:
+          $ref: '#/definitions/InsertCreditNoteItem'
+      bcCode:
+        type: string
+        example: C0040
+        description: BcCode
+      reasonCode:
+        type: string
+        example: R0050
+        description: ReasonCode
+    description: InsertCreditNote
+    xml:
+      name: insertCreditNote
+  InsertCreditNoteItem:
+    type: object
+    required:
+      - invoiceDetailNo
+      - type
+    properties:
+      type:
+        type: string
+        example: FULL
+        description: Type
+        enum:
+          - FULL
+          - PARTIAL
+      invoiceDetailNo:
+        type: integer
+        format: int64
+        example: 1680
+        description: InvoiceDetailNo
+      grossAmount:
+        type: number
+        example: 16.19
+        description: Gross amount
+    description: InsertCreditNoteItem
+    xml:
+      name: insertCreditNoteItem
+  Invoice:
+    type: object
+    required:
+      - 'no'
+      - type
+    properties:
+      invoiceDetails:
+        type: array
+        description: Invoice details for the invoice - Line items
+        items:
+          $ref: '#/definitions/InvoiceDetail'
+      'no':
+        type: integer
+        format: int64
+        example: 42
+        description: Internal sequential OpenInformer invoice number
+      type:
+        type: string
+        example: INVOICE
+        description: Invoice type
+        enum:
+          - INVOICE
+          - CREDITNOTE
+      invoiceId:
+        type: string
+        example: INV0000042
+        description: External and for customers visible invoice number
+      companyCodeId:
+        type: string
+        example: DE_BILLX_OSNABRUECK
+        description: Accounting area number
+      boNo:
+        type: string
+        example: '289347'
+        description: Reference on the business/customer -object No
+      locale:
+        type: string
+        example: en_US
+        description: Locale
+      invoiceDate:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Invoice date. Date in ISO-8601 format
+      billingPeriodFrom:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Invoice period from date. Date in ISO-8601 format
+      billingPeriodTo:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Invoice period to date. Date in ISO-8601 format
+      oldRef:
+        type: integer
+        format: int64
+        example: 35
+        description: Reference on original invoice for correction invoices
+      oldRefId:
+        type: string
+        example: CD00035
+        description: Reference on original invoice for correction invoices
+      status:
+        type: string
+        example: OPEN
+        description: Invoice status
+        enum:
+          - OPEN
+          - PAID
+          - PARTIAL
+          - CANCELLED
+      locked:
+        type: boolean
+        example: true
+        description: Locked
+      simInvoice:
+        type: boolean
+        example: false
+        description: Simulation invoice
+      workflowCode:
+        type: string
+        example: XX-CC
+        description: WorkflowCode
+      copyType:
+        type: string
+        example: ORIGINAL
+        description: CopyType
+        enum:
+          - ORIGINAL
+          - REISSUE
+          - DUPLICATE_COPY
+      copySeq:
+        type: integer
+        format: int64
+        example: 0
+        description: Copy sequence number
+      bcCode:
+        type: string
+        example: FC0020
+        description: BcCode
+      reasonCode:
+        type: string
+        example: R0040
+        description: ReasonCode
+      wfDispatchCode:
+        type: string
+        example: '240'
+        description: WfDispatchCode
+      docState:
+        type: string
+        example: C-100
+        description: DocState
+      taxNumber:
+        type: string
+        example: DE999999999
+        description: Used tax number on invoice
+      ustId:
+        type: string
+        example: DE 136 695 976
+        description: UstId
+      invoiceAmount:
+        description: InvoiceAmount
+        $ref: '#/definitions/FormattedInvoiceAmount'
+      exportedAt:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Invoice export at date. Date in ISO-8601 format
+      exportFile:
+        type: string
+        example: CD000042.pdf
+        description: Export file name
+      printedAt:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Invoice printed at Date. Date in ISO-8601 format
+      statementDate:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Invoice statement date. Date in ISO-8601 format
+      topayAt:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Payment target. Date in ISO-8601 format
+      extRef1:
+        type: string
+        example: '1846845148348'
+        description: ExtRef1
+      extRef2:
+        type: string
+        example: '168468786484'
+        description: ExtRef2
+      extIdxState:
+        type: integer
+        format: int64
+        example: 1358
+        description: ExtIdxState
+      extIdxStateDesc:
+        type: string
+        example: success
+        description: ExtIdxStateDesc
+      cnRef:
+        type: integer
+        format: int64
+        example: 35
+        description: Reference on original invoice for credit notes.
+      cnRefId:
+        type: string
+        example: CD00035
+        description: Reference on original invoice for credit notes.
+      note:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr.'
+        description: Note
+      text1:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Text1
+      text2:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Text2
+      purpose1:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Purpose1
+      purpose2:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Purpose2
+      purpose3:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Purpose3
+      purpose4:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Purpose4
+      enterIntervalId:
+        type: string
+        example: BillingRun.gam
+        description: Key of the inserting system.
+    description: Invoice
+  InvoiceContainer:
+    type: object
+    properties:
+      invoices:
+        type: array
+        description: Resource collection for Invoice
+        items:
+          xml:
+            name: invoices
+          $ref: '#/definitions/Invoice'
+    description: InvoiceContainer
+  InvoiceDetail:
+    type: object
+    properties:
+      'no':
+        type: integer
+        format: int64
+        example: 1821483484
+        description: Internal sequential OpenInformer invoice detail number
+      invoiceNo:
+        type: integer
+        format: int64
+        example: 13843848
+        description: Referenced OpenInformer invoice number
+      invoiceId:
+        type: string
+        example: INV0000042
+        description: External and for customers visible invoice number
+      type:
+        type: string
+        example: SERVICE
+        description: Invoice detail type
+        enum:
+          - VOLUME
+          - SERVICE
+      code:
+        type: string
+        example: DE_BM_00_PRODUCT_0001
+        description: Code
+      contractId:
+        type: string
+        example: DE-19875-1
+        description: Contract id the invoice item is created for
+      origContractId:
+        type: string
+        example: DE-34848-6
+        description: Main contract id the invoice item is created for
+      assignedContractId:
+        type: string
+        example: DE-19875-1
+        description: Assigned contract id
+      tariffId:
+        type: string
+        example: DEFAULT
+        description: Reference on the used tariff model
+      trafficTariffId:
+        type: string
+        example: DEFAULT
+        description: Reference on the used tariff rule
+      tariffServiceNo:
+        type: string
+        example: DEFAULT
+        description: Reference on the used tariff service model
+      ctrlAccNo:
+        type: integer
+        format: int64
+        example: 438
+        description: Reference on the billing account
+      inputDate:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Created at. Date in ISO-8601 format
+      periodFrom:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Calculation period from date. Date in ISO-8601 format
+      periodTo:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: Calculation period to date. Date in ISO-8601 format
+      price:
+        description: price
+        $ref: '#/definitions/FormattedPrice'
+      taxCode:
+        type: string
+        example: DE-19
+        description: Tax code
+      category:
+        type: string
+        example: DE_BM_00_OFFER0001
+        description: Category
+      group:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Position description 1
+      subgroup:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Position description 2
+      description:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Position description 3
+      connection:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Position description 4
+      volume:
+        type: number
+        example: 128.68
+        description: Amount to be invoiced
+      unit:
+        type: string
+        example: P03Y
+        description: Invoiced unit
+      baseprice:
+        type: number
+        example: 16.19
+        description: Used base price
+      groupCode:
+        type: string
+        example: DE_BM_00_Offer1484
+        description: Group code
+      threshold:
+        type: number
+        example: 1
+        description: Free units
+      numberOfCharges:
+        type: integer
+        format: int64
+        example: 1
+        description: Number of used record from settlement data for this invoice
+      costcenter:
+        type: string
+        example: Office
+        description: Costcenter
+      orderId:
+        type: string
+        example: '4348844384'
+        description: Order ID
+      externRef:
+        type: string
+        example: '135184'
+        description: External reference
+    description: InvoiceDetail
+  InvoiceDetailsContainer:
+    type: object
+    properties:
+      invoiceDetails:
+        type: array
+        description: Resource collection for Invoice
+        items:
+          xml:
+            name: invoiceDetails
+          $ref: '#/definitions/InvoiceDetail'
+    description: InvoiceDetailsContainer
+  InvoiceTemplate:
+    type: object
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      'no':
+        type: integer
+        format: int64
+        example: 42
+        description: The internal OI identifier for this InvoiceTemplate.
+        readOnly: true
+      boNo:
+        type: integer
+        format: int64
+        example: 15648
+        description: boNo
+      companyCodeId:
+        type: string
+        example: BILLX
+        description: companyCodeId
+      code:
+        type: string
+        example: CUSTOMER
+        description: code
+      name:
+        type: string
+        example: customer_15648_183484
+        description: name
+      periodCode:
+        type: string
+        example: P01Y
+        description: periodCode
+      done:
+        type: boolean
+        example: true
+        description: done
+      locale:
+        type: string
+        example: de_DE
+        description: Locale of the contract if deviating from customer locale
+      invoiceTemplateDetails:
+        type: array
+        description: invoiceTemplateDetails
+        items:
+          $ref: '#/definitions/MapType'
+      waitingDays:
+        type: integer
+        format: int64
+        example: 5
+        description: waitingDays
+      billingDay:
+        type: integer
+        format: int64
+        example: 15
+        description: billingDay
+      paymentDay:
+        type: integer
+        format: int64
+        example: 17
+        description: paymentDay
+      paymentDays:
+        type: integer
+        format: int64
+        example: 5
+        description: paymentDays
+      invMaxWaitingDays:
+        type: integer
+        format: int64
+        example: 1
+        description: invMaxWaitingDays
+      invMinTotal:
+        type: number
+        example: 0
+        description: invMinTotal
+      internalInvoice:
+        type: boolean
+        description: internalInvoice
+      validFrom:
+        type: string
+        format: date-time
+        description: From this date the related service/contract is available
+      validTo:
+        type: string
+        format: date-time
+        description: "\tTill this date the related service/contract is available"
+      paymentId:
+        type: string
+        example: 3d7297f0-e47d-11e6-bf01-fe55135034f3
+        description: Id of the way of payment ( credit card or invoice)
+      baseAddressId:
+        type: string
+        example: customer_15648
+        description: baseAddressId
+      deliveryAddressId:
+        type: string
+        example: delivery_15648
+        description: deliveryAddressId
+      billingAddressId:
+        type: string
+        example: billing_15648
+        description: billingAddressId
+      invCount:
+        type: integer
+        format: int64
+        example: 1
+        description: invCount
+        readOnly: true
+      nextBilling:
+        type: string
+        format: date-time
+        description: Date when the next bill will be created
+        readOnly: true
+      lastBilling:
+        type: string
+        format: date-time
+        description: Date when the last bill was created
+        readOnly: true
+      baseTmplNo:
+        type: integer
+        format: int64
+        example: 567
+        description: baseTmplNo
+      documentsByEmail:
+        type: integer
+        format: int64
+        description: documentsByEmail
+      dispatchCode:
+        type: string
+        example: '220'
+        description: Represents the way of communication with the customer (e.g. via email or mail etc.)
+    description: InvoiceTemplate
+    xml:
+      name: invoiceTemplate
+  InvoiceTemplateState:
+    type: object
+    properties:
+      'no':
+        type: integer
+        format: int64
+        example: 14848
+        description: 'no'
+        readOnly: true
+      invoiceTemplateNo:
+        type: integer
+        format: int64
+        example: 564
+        description: invoiceTemplateNo
+      code:
+        type: string
+        example: CUSTOMER
+        description: code
+      invoiceTemplateStateDetails:
+        type: array
+        description: invoiceTemplateStateDetails
+        items:
+          $ref: '#/definitions/MapType'
+      workflowCode:
+        type: string
+        description: workflowCode
+      failureCode:
+        type: string
+        description: failureCode
+      successCode:
+        type: string
+        description: successCode
+      position:
+        type: integer
+        format: int64
+        example: 1
+        description: position
+      nextStateNo:
+        type: integer
+        format: int64
+        example: 12
+        description: nextStateNo
+      wfModuleNo:
+        type: integer
+        format: int64
+        example: 13
+        description: wfModuleNo
+      delayToPrev:
+        type: number
+        example: 3
+        description: delayToPrev
+      manualCheck:
+        type: integer
+        format: int64
+        example: 1
+        description: manualCheck
+      maxDuration:
+        type: integer
+        format: int64
+        example: 5
+        description: maxDuration
+    description: InvoiceTemplateState
+    xml:
+      name: invoiceTemplateState
+  MapType:
+    type: object
+    properties:
+      key:
+        type: string
+        example: BusinessObject.idExt
+        description: key
+      type:
+        type: string
+        example: STRING
+        description: type
+        enum:
+          - STRING
+          - DATETIME
+          - INTEGER
+          - FLOAT
+      value:
+        type: string
+        example: 524a47bc-e474-11e6-bf01-fe55135034f3
+        description: value
+    description: MapType
+    xml:
+      name: mapType
+  Order:
+    type: object
+    required:
+      - companyCodeId
+      - contractId
+    properties:
+      companyCodeId:
+        type: string
+        example: BILLX
+        description: 'Refers the companyCode and client of the businessObject. '
+      contractId:
+        type: string
+        example: '34877'
+        description: External Id of the contract defined by the interface client.
+      orderId:
+        type: string
+        example: B1354
+        description: 'The orderId identifies the order of the customer. The ID is set by the client who is responsible for the order management. '
+      referenceDate:
+        type: string
+        format: date-time
+        example: '2017-03-21T15:04:35.839Z'
+        description: 'The referenceDate can be set by the interface client to ensure, that for the billing run the services and tariffs are used with the instances that have been active at that time. For example: Prices that were valid at that time.If no referenceDate is set, the local time of the CompanyCode and Client is used. '
+      orderItems:
+        type: array
+        description: The order items that are part of the order.
+        items:
+          $ref: '#/definitions/OrderItem'
+    description: Order
+    xml:
+      name: order
+  OrderItem:
+    type: object
+    required:
+      - code
+    properties:
+      serviceType:
+        type: string
+        example: Offer
+        description: 'serviceType that can be defined for the TariffServices.For example: Offer or Product.'
+      serviceId:
+        type: string
+        example: 5bd779d0-e474-11e6-bf01-fe55135034f3
+        description: serviceId
+      code:
+        type: string
+        example: DE_BM_00_OFFER_001
+        description: The code of the serviceType that is used on the product catalog.
+      assetRef:
+        type: string
+        example: VIN0123456
+        description: The assetRef is used to generate a reference to an asset.
+      validFrom:
+        type: string
+        format: date-time
+        description: validFrom
+      validTo:
+        type: string
+        format: date-time
+        description: validTo
+      additionalAttributes:
+        type: array
+        description: additionalAttributes
+        items:
+          $ref: '#/definitions/MapType'
+    description: OrderItem
+    xml:
+      name: orderItem
+  PaymentData:
+    type: object
+    required:
+      - boNo
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      'no':
+        type: integer
+        format: int64
+        example: 42
+        description: 'no'
+        readOnly: true
+      boNo:
+        type: integer
+        format: int64
+        example: 135484
+        description: Id of the business object. Connection of the address data set to a business object.
+      paymentType:
+        type: string
+        example: CC
+        description: 'Type of payment - credit card or invoice etc. defines how the customer wants to pay, using this payment data set.'
+      id:
+        type: string
+        example: 3d7297f0-e47d-11e6-bf01-fe55135034f3
+        description: External payment id given by payment provider
+      bankData:
+        description: General data of the bank. Reference to the BankData entry on the database.
+        $ref: '#/definitions/BankData'
+      creditCardData:
+        description: General data of the credit card. Reference to the CreditCardData  entry on the database.
+        $ref: '#/definitions/CreditCardData'
+      active:
+        type: boolean
+        example: true
+        description: Payment data is active. Shows the activation state of the payment data set.
+      lockedForPayment:
+        type: boolean
+        example: false
+        description: Payment data is locked for payment
+      validFrom:
+        type: string
+        format: date-time
+        example: 13.05.2017
+        description: From this date the payment data are/were available
+      validTo:
+        type: string
+        format: date-time
+        example: 10.10.2020
+        description: Till this date the payment data are/will be available
+      reminderGroupCode:
+        type: string
+        example: CC_EXPIRED_01
+        description: 'Group code of the reminder. Defines the code for the notification, that the payment is expiring soon.'
+      reminderSentAt:
+        type: string
+        format: date-time
+        description: Date at which the reminder email was sent last time
+        readOnly: true
+      note:
+        type: string
+        example: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr'
+        description: Field where additional comments can be placed
+    description: PaymentData
+    xml:
+      name: paymentData
+  PaymentStatus:
+    type: object
+    properties:
+      validationStatus:
+        type: string
+        example: PAID
+        description: validationStatus
+        enum:
+          - PAID
+          - NOT_PAID
+      detailStatus:
+        type: string
+        example: over paid
+        description: detailStatus
+      invoiceId:
+        type: string
+        example: CD000042
+        description: invoiceId
+    description: PaymentStatus
+    xml:
+      name: paymentStatus
+  PaymentStatusContainer:
+    type: object
+    properties:
+      paymentstatus:
+        type: array
+        xml:
+          name: invoices
+        description: Resource collection for PaymentStatus
+        items:
+          xml:
+            name: invoices
+          $ref: '#/definitions/PaymentStatus'
+    description: PaymentStatusContainer
+  Query:
+    type: object
+    required:
+      - match
+    properties:
+      match:
+        description: match
+        $ref: '#/definitions/MapType'
+    description: Query
+  ReducedPrice:
+    type: object
+    properties:
+      grossAmount:
+        type: number
+        example: -19.99
+        description: gross price amount e.g. 19.99
+      formattedGrossAmount:
+        type: string
+        example: '-19,99 EUR'
+        description: 'formatted gross price amount e.g. 19,99 EUR'
+    description: ReducedPrice
+    xml:
+      name: reducedPrice
+  Service:
+    type: object
+    properties:
+      created:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: 'Meta data that is set by the server.If a date is sent by the client within the creation request, the value will be ignored.'
+        readOnly: true
+      editor:
+        type: string
+        example: user1234
+        description: 'The editor of the object. In contrast to the creator, the editor updates the object and did not necessarily generate the object.'
+      creator:
+        type: string
+        example: user1167
+        description: The creator of the asset object in OI.
+      'no':
+        type: integer
+        format: int64
+        example: 256
+        description: 'no'
+      id:
+        type: string
+        example: '986987'
+        description: id
+      idExt:
+        type: string
+        example: 684a384e
+        description: Further external id for the service. Set by the interface client.
+      extRef:
+        type: string
+        example: EXT1234
+        description: External reference. Set by interface client.
+      serviceType:
+        type: string
+        description: serviceType
+        enum:
+          - SINGLE
+          - BUNDLE
+          - SUBBUNDLE
+      domain:
+        description: 'Domain: company, client and further billing-related information'
+        $ref: '#/definitions/ServiceDomain'
+      serviceSubgroup:
+        type: integer
+        format: int64
+        description: serviceSubgroup
+      currencyCode:
+        type: string
+        example: EUR
+        description: currencyCode
+      category:
+        type: string
+        description: category
+      code:
+        type: string
+        description: code
+      groupCode:
+        type: string
+        description: groupCode
+      group:
+        type: string
+        description: group
+      subgroup:
+        type: string
+        description: subgroup
+      name:
+        type: string
+        description: name
+      connection:
+        type: string
+        description: connection
+      productType:
+        type: string
+        example: Standard
+        description: productType
+      validFrom:
+        type: string
+        format: date-time
+        description: validFrom
+      validTo:
+        type: string
+        format: date-time
+        description: validTo
+      isDeferredInc:
+        type: integer
+        format: int64
+        description: isDeferredInc
+      extPrices:
+        type: boolean
+        example: false
+        description: extPrices
+      specialPrice:
+        type: boolean
+        example: false
+        description: specialPrice
+      specialPriceReason:
+        type: string
+        example: Lorem ipsum dolor sit amet
+        description: specialPriceReason
+      nextActionDate:
+        type: string
+        format: date-time
+        description: nextActionDate
+      totalPrice:
+        type: number
+        example: 12.78
+        description: totalPrice
+      basePrice:
+        type: number
+        example: 12.78
+        description: basePrice
+      taxRate:
+        type: number
+        example: 19
+        description: taxRate
+      taxCode:
+        type: string
+        example: DE-19
+        description: taxCode
+      periodCode:
+        type: string
+        example: P03Y
+        description: periodCode
+      quantity:
+        type: number
+        example: 1234
+        description: quantity
+      quantity2:
+        type: number
+        example: 1234
+        description: quantity2
+      quantity3:
+        type: number
+        example: 1234
+        description: quantity3
+      quantity4:
+        type: number
+        example: 1234
+        description: quantity4
+      unit:
+        type: string
+        example: Monat(e)
+        description: unit for field 'quantity'
+      unit2:
+        type: string
+        example: kwH
+        description: unit for field 'quantity2'
+      unit3:
+        type: string
+        example: pcs
+        description: unit for field 'quantity3'
+      unit4:
+        type: string
+        example: myUnit
+        description: unit for field 'quantity4'
+      freeUntilDate:
+        type: string
+        format: date-time
+        description: freeUntilDate
+      midOfPeriod:
+        type: boolean
+        example: false
+        description: midOfPeriod
+      accountingDay:
+        type: integer
+        format: int64
+        description: accountingDay
+      advancedPayment:
+        type: boolean
+        example: false
+        description: advancedPayment
+      lastBilling:
+        type: string
+        format: date-time
+        description: lastBilling
+      nextBilling:
+        type: string
+        format: date-time
+        description: nextBilling
+      invoicePosition:
+        type: string
+        example: P782
+        description: invoicePosition
+      boStateNo:
+        type: integer
+        format: int64
+        example: 1234
+        description: boStateNo
+      proRataPeriodCode:
+        type: string
+        example: P01Y
+        description: 'When periodical service is prematurely terminated the  remaining time gets billed according to this period ratio. '
+      done:
+        type: boolean
+        example: true
+        description: done
+      visible:
+        type: boolean
+        example: true
+        description: visible
+      billable:
+        type: boolean
+        example: true
+        description: billable
+      ready:
+        type: boolean
+        example: true
+        description: ready
+      credit:
+        type: boolean
+        example: false
+        description: credit
+      creditRef:
+        type: integer
+        format: int64
+        example: 1234
+        description: creditRef
+      assetId:
+        type: string
+        example: AS1234
+        description: assetId
+      assetState:
+        type: string
+        example: active
+        description: assetState
+      assetStateDate:
+        type: string
+        format: date-time
+        description: assetStateDate
+      orderId:
+        type: string
+        example: O1234
+        description: orderId
+      note:
+        type: string
+        example: Lorem ipsum dolor sit amet
+        description: note
+      referenceNo:
+        type: integer
+        format: int64
+        example: 1234
+        description: Reference can be used by client. Any other object may be referenced here. Client-specific.
+      serviceDetails:
+        type: array
+        description: serviceDetails
+        items:
+          $ref: '#/definitions/MapType'
+    description: Service
+    xml:
+      name: service
+  ServiceContainer:
+    type: object
+    properties:
+      services:
+        type: array
+        description: Resource collection for Service
+        items:
+          xml:
+            name: services
+          $ref: '#/definitions/Service'
+    description: ServiceContainer
+  ServiceDomain:
+    type: object
+    properties:
+      contractNo:
+        type: integer
+        format: int64
+        example: 1234
+        description: Reference to Contract for this service
+      boNo:
+        type: integer
+        format: int64
+        example: 42
+        description: Reference to BusinessObject which owns this service
+      commissionContractNo:
+        type: integer
+        format: int64
+        example: 9078
+        description: Reference to CommissionContract
+      tariffNo:
+        type: integer
+        format: int64
+        example: 12
+        description: Reference to tariff for this service
+      tariffServiceNo:
+        type: integer
+        format: int64
+        example: 86978
+        description: reference to TariffService ( 'blueprint' of this service)
+      tariffServiceTypeNo:
+        type: integer
+        format: int64
+        example: 8
+        description: Reference to TariffService
+      bundleNo:
+        type: integer
+        format: int64
+        example: 956789
+        description: reference to bundle 'head' Service
+      vendorNo:
+        type: integer
+        format: int64
+        example: 1234
+        description: Reference to vendor BusinessObject
+      ctrlAccNo:
+        type: integer
+        format: int64
+        example: 1234
+        description: Reference to revenue or expense account.
+      linkedServiceNo:
+        type: integer
+        format: int64
+        example: 1234
+        description: Reference to other Service object. Project-specific
+    description: Domain
+    xml:
+      name: domain
+  SmartInvoiceTemplate:
+    type: object
+    properties:
+      'no':
+        type: integer
+        format: int64
+        example: 42
+        description: 'no'
+        readOnly: true
+      boNo:
+        type: integer
+        format: int64
+        example: 15648
+        description: boNo
+      companyCodeId:
+        type: string
+        example: BILLX
+        description: companyCodeId
+      locale:
+        type: string
+        example: de_DE
+        description: locale
+      paymentId:
+        type: string
+        example: 3d7297f0-e47d-11e6-bf01-fe55135034f3
+        description: paymentId
+      code:
+        type: string
+        example: CUSTOMER
+        description: code
+      name:
+        type: string
+        example: customer_15648_183484
+        description: name
+      baseAddressId:
+        type: string
+        example: customer_15648
+        description: baseAddressId
+      billingAddressId:
+        type: string
+        example: billing_15648
+        description: billingAddressId
+      deliveryAddressId:
+        type: string
+        example: delivery_15648
+        description: deliveryAddressId
+      dispatchCode:
+        type: string
+        example: '220'
+        description: dispatchCode
+    description: SmartInvoiceTemplate
+    xml:
+      name: smartInvoiceTemplate
+  StoreBasket:
+    type: object
+    properties:
+      storeBasketItems:
+        type: array
+        description: storeBasketItems
+        items:
+          $ref: '#/definitions/StoreBasketItem'
+      storeBasketPrice:
+        description: storeBasketPrice
+        $ref: '#/definitions/StoreBasketPrice'
+    description: Store basket
+    xml:
+      name: storeBasket
+  StoreBasketItem:
+    type: object
+    properties:
+      productCode:
+        type: string
+        example: DE_BM_00_Product01
+        description: Product code
+      offerCode:
+        type: string
+        example: DE_BM_00_Offer01
+        description: Offer code
+      price:
+        description: Price
+        $ref: '#/definitions/FormattedPrice'
+    description: 'Store basket item with offer code and price information (currency code, net price, gross price, tax, tax rate)'
+    xml:
+      name: storeBasketItem
+  StoreBasketPrice:
+    type: object
+    properties:
+      currencyCode:
+        type: string
+        example: EUR
+        description: ISO-4217 currency code e.g. EUR
+      netAmount:
+        type: number
+        example: 16.8
+        description: net price amount e.g. 16.80
+      grossAmount:
+        type: number
+        example: 19.99
+        description: gross price amount e.g. 19.99
+      taxAmount:
+        type: number
+        example: 3.19
+        description: tax amount e.g. 3.19
+      formattedNetAmount:
+        type: string
+        example: '16,80 EUR'
+        description: 'formatted net price amount e.g. 16,80 EUR'
+      formattedGrossAmount:
+        type: string
+        example: '19,99 EUR'
+        description: 'formatted gross price amount e.g. 19,99 EUR'
+      formattedTaxAmount:
+        type: string
+        example: '3,19 EUR'
+        description: 'formatted tax price amount e.g. 3,19 EUR'
+      taxDetails:
+        type: array
+        items:
+          $ref: '#/definitions/TaxDetail'
+    description: StoreBasketPrice
+  Task:
+    type: object
+    required:
+      - operation
+      - query
+    properties:
+      operation:
+        type: string
+        example: DELETE
+        description: operation
+        enum:
+          - DELETE
+      query:
+        description: query
+        $ref: '#/definitions/Query'
+    description: Task
+  TaxDetail:
+    type: object
+    properties:
+      currencyCode:
+        type: string
+        example: EUR
+        description: ISO-4217 currency code e.g. EUR
+      netAmount:
+        type: number
+        example: 16.8
+        description: net price amount e.g. 16.80
+      grossAmount:
+        type: number
+        example: 19.99
+        description: gross price amount e.g. 19.99
+      taxAmount:
+        type: number
+        example: 3.19
+        description: tax amount e.g. 3.19
+      taxRate:
+        type: number
+        example: 19
+        description: tax rate e.g. 19
+      formattedNetAmount:
+        type: string
+        example: '16,80 EUR'
+        description: 'formatted net price amount e.g. 16,80 EUR'
+      formattedGrossAmount:
+        type: string
+        example: '19,99 EUR'
+        description: 'formatted gross price amount e.g. 19,99 EUR'
+      formattedTaxAmount:
+        type: string
+        example: '3,19 EUR'
+        description: 'formatted tax price amount e.g. 3,19 EUR'
+    description: 'price information (currency code, net price, gross price, tax, tax rate) and with formatted price'

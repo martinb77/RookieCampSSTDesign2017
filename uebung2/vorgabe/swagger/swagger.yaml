@@ -1,0 +1,65 @@
+swagger: '2.0'
+info:
+  description: API for evaluating coffee at QAware.
+  version: 1.0.0
+  title: QAcoffee API
+host: 'localhost:8090'
+basePath: /
+tags:
+  - name: someTag
+    description: some description about this API
+paths:
+  /api/doSomething:
+    get:
+      tags:
+        - someTag
+      summary: Returns something.
+      description: some more description here
+      operationId: doSomethingUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 'Successful operation, may contain business errors.'
+          schema:
+            $ref: '#/definitions/BooleanResponse'
+        '500':
+          description: 'An internal error occurred, unable to process the request in a proper way.'
+          schema:
+            $ref: '#/definitions/Errors'
+definitions:
+  Errors:
+    type: object
+    properties:
+      errors:
+        type: array
+        description: All occured errors
+        items:
+          $ref: '#/definitions/Error'
+  Error:
+    type: object
+    properties:
+      errorCode:
+        type: string
+        description: The type of the error.
+        enum:
+          - INCOMPLETE
+          - NOT_FOUND
+          - UNKNOWN_ERROR
+      message:
+        type: string
+        description: Some descriptive message which describes the error.
+    description: business errors
+  BooleanResponse:
+    type: object
+    properties:
+      businessErrors:
+        description: possible business errors.
+        $ref: '#/definitions/Errors'
+      payload:
+        type: boolean
+        example: false
+        description: the business data payload.
+    description: Response with a boolean result.
