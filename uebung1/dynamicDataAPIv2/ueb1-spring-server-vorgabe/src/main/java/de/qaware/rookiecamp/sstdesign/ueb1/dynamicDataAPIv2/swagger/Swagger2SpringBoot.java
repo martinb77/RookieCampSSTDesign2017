@@ -10,7 +10,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
 @EnableSwagger2
-@ComponentScan(basePackages = {"de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2", "de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2.api"})
+@ComponentScan(basePackages = {"de.qaware.rookiecamp.sstdesign.ueb1.dynamicDataAPIv2"})
 public class Swagger2SpringBoot implements CommandLineRunner {
 
     @Override
