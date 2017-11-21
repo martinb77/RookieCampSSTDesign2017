@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class QAcoffeeAPI {
 
-    @ApiOperation(value = "Returns something.", notes = "some more description here")
+    @ApiOperation(value = "Returns something.", notes = "some blabla  description here")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = BooleanResponse.class),
             @ApiResponse(code = 400, message = "Error in request parameters.", response = Errors.class),
