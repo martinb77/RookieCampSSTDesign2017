@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.Valid;
 import java.time.Instant;
@@ -53,9 +52,8 @@ public class QAcoffeeAPI {
             @ApiResponse(code = 200, message = "Evaluation received successfully")
     })
     @RequestMapping(path = "/evaluation", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.OK)
-    public void addEvaluation(@Valid @RequestBody EvaluationDto evaluationDto) {
-
+    public ResponseEntity<Void> addEvaluation(@Valid @RequestBody EvaluationDto evaluationDto) {
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
 
