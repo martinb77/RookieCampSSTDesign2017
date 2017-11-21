@@ -1,7 +1,11 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api;
 
+import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.dto.EvaluationChoicesDTO;
+import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.dto.EvaluationDTO;
 import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.model.Errors;
 import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.response.BooleanResponse;
+import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.response.EvaluationChoicesResponse;
+import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.response.EvaluationResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -9,6 +13,7 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -18,21 +23,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class QAcoffeeAPI {
 
-    @ApiOperation(value = "Returns something.", notes = "some more description here")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = BooleanResponse.class),
-            @ApiResponse(code = 400, message = "Error in request parameters.", response = Errors.class),
-            @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.", response = Errors.class)
-    })
-    @RequestMapping(path = "/doSomething", method = RequestMethod.GET)
-    public ResponseEntity<BooleanResponse> doSomething() {
-        //TODO: do some magic!
-        //this may be a
-        //- small implementation
-        //- delegate to business
-        //-- via Java Interface injected
-        //-- just a delegate implmentation
-        return new ResponseEntity<>(new BooleanResponse(Boolean.TRUE, null), HttpStatus.OK);
+    @ApiOperation(value = "Returns choices.", notes = "Indeed, it returns the choices")
+    @RequestMapping(path = "/choices", method = RequestMethod.GET)
+    public ResponseEntity<EvaluationChoicesResponse> getEvaluationChoices() {
+        return new ResponseEntity<EvaluationChoicesResponse>(
+                new EvaluationChoicesResponse(
+                        new EvaluationChoicesDTO(), null
+                ), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Submit single Evaluation", notes = "Returns Evaluation ID of newly created Evaluation")
+    @RequestMapping(path = "/evaluation", method = RequestMethod.POST)
+    public ResponseEntity<EvaluationResponse> submitOrCreateEvaluation(@RequestBody EvaluationDTO evaluation) {
+        return new ResponseEntity<EvaluationResponse>(
+                new EvaluationResponse(42, null), HttpStatus.CREATED);
     }
 
 }
