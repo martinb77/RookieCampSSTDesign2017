@@ -46,22 +46,6 @@ public class QAcoffeeAPI {
         return new ResponseEntity<QAcoffeeResponse<List<TimePeriod>>>(QAcoffeeResponse.of(timePeriods), HttpStatus.OK);
     }
 
-//
-//    @ApiOperation(value = "Returns the dynamic data of an vehicle.", notes = "Position will be returned only, if vehicle " +
-//            "tracking is enabled. This method calls the CCG (Connected charging Gateway) and requests information " +
-//            "about the current vehicle state. formerly: ` /dynamicdata/v1/{vin}` ")
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = DynamicDataResponse.class),
-//            @ApiResponse(code = 403, message = "user is not allowed to access"),
-//            @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.", response = Errors.class),
-//            @ApiResponse(code = 502, message = "An error occurred in backend v1, unable to process the request in a proper way.", response = Errors.class)})
-//    @RequestMapping(value = "/dynamic/{vin}", produces = "application/json", method = RequestMethod.GET)
-//    public ResponseEntity<?> dynamicVinGet(@Size(min = 17, max = 17)
-//                                           @ApiParam(value = "the vin[17 characters] for which the services will be returned", required = true,defaultValue = "V1234567891234567")
-//                                           @PathVariable("vin") String vin,
-//                                           @ApiParam(value = "offset in minutes from GMT, default is 0")
-//                                           @RequestParam(value = "offset", required = false) Integer offset) {
-
 
 
     @ApiOperation(value = "send a new evaluation result", notes = "if there are no periods(yet) available an empty list is returned")
