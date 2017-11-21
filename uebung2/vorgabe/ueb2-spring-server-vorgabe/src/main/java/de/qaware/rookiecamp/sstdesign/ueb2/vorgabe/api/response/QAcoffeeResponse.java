@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @param <T> The type of the business payload.
  */
-public abstract class QAcoffeeResponse<T> {
+public class QAcoffeeResponse<T> {
     @JsonProperty
     @ApiModelProperty("the business data payload.")
     private T payload;
@@ -26,6 +26,14 @@ public abstract class QAcoffeeResponse<T> {
     public QAcoffeeResponse(T payload, Errors businessErrors) {
         this.payload = payload;
         this.businessErrors = businessErrors;
+    }
+
+    public QAcoffeeResponse(T payload) {
+       this(payload,null);
+    }
+
+    public static <T> QAcoffeeResponse of(T payload){
+        return new QAcoffeeResponse<>(payload);
     }
 
     public T getPayload() {
