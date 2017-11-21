@@ -47,7 +47,6 @@ public class QAcoffeeAPI {
     })
     @RequestMapping(path = "/sendReview", method = RequestMethod.POST)
     public ResponseEntity<BooleanResponse> getBeverages(@RequestBody Review review) {
-        //TODO: do some magic!
         //this may be a
         //- small implementation
         //- delegate to business
