@@ -3,6 +3,7 @@ package de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api;
 import com.google.common.collect.ImmutableList;
 import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.model.BeveragesDto;
 import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.model.CoffeesDto;
+import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.model.EvaluationDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -10,9 +11,12 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.Valid;
 import java.time.Instant;
 import java.util.Collections;
 
@@ -43,4 +47,16 @@ public class QAcoffeeAPI {
                 new BeveragesDto.BeverageDto(1, "Cappucino"),
                 new BeveragesDto.BeverageDto(2, "Espresso"))), HttpStatus.OK);
     }
+
+    @ApiOperation(value = "Add an evaluation of coffee consumption", notes = "")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Evaluation received successfully")
+    })
+    @RequestMapping(path = "/evaluation", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    public void addEvaluation(@Valid @RequestBody EvaluationDto evaluationDto) {
+
+    }
+
+
 }
