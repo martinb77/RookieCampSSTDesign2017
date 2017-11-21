@@ -1,5 +1,6 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api;
 
+import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.model.CoffeesDto;
 import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.model.Errors;
 import de.qaware.rookiecamp.sstdesign.ueb2.vorgabe.api.response.BooleanResponse;
 import io.swagger.annotations.Api;
@@ -13,19 +14,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 
-@Api(value = "theAPI", description = "some description about this API", tags = {"someTag"})
-@RequestMapping(path = "/api", produces = "application/json")
+@Api(value = "QAcoffeeAPI", description = "The API to the QAcoffeeAPI")
+@RequestMapping(path = "/api/v1/coffee", produces = "application/json")
 @Controller
 public class QAcoffeeAPI {
 
-    @ApiOperation(value = "Returns something.", notes = "some more description here")
+    @ApiOperation(value = "Returns the available beverages", notes = "")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = BooleanResponse.class),
-            @ApiResponse(code = 400, message = "Error in request parameters.", response = Errors.class),
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.", response = Errors.class)
     })
-    @RequestMapping(path = "/doSomething", method = RequestMethod.GET)
-    public ResponseEntity<BooleanResponse> doSomething() {
+    @RequestMapping(path = "/availableCoffees", method = RequestMethod.GET)
+    public ResponseEntity<CoffeesDto> doSomething() {
         //TODO: do some magic!
         //this may be a
         //- small implementation
