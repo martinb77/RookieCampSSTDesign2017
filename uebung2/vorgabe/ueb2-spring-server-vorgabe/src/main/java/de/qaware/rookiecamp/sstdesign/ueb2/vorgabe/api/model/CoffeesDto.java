@@ -14,7 +14,7 @@ public class CoffeesDto {
     private List<CoffeeDto> coffees;
 
     @ApiModel("A coffee brand offered for some time")
-    private class CoffeeDto {
+    public static class CoffeeDto {
         @JsonProperty
         @ApiModelProperty("Unique id of coffee")
         private int id;
