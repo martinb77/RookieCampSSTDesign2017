@@ -20,14 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Api(value = "coffee evalauation API", description = "Backend for QACoffe UI to revrieve all relevant infromation", tags = {"coffee"})
+@Api(value = "coffee evalauation API", description = "Backend for QACoffe UI to retrieve all relevant information", tags = {"coffee"})
 @RequestMapping(path = "/api/v1", produces = "application/json")
 @Controller
 public class QAcoffeeAPI {
 
     @ApiOperation(value = "returns available beverages.", notes = "beverage types like espresso.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = BooleanResponse.class),
+            @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = QAcoffeeResponse.class),
             @ApiResponse(code = 400, message = "Error in request parameters.", response = Errors.class),
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.", response = Errors.class)
     })
