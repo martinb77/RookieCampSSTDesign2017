@@ -24,6 +24,7 @@ public class QAcoffeeEvaluationAPI {
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.",
                     response = Errors.class)})
     @RequestMapping(path = "/evaluate", method = RequestMethod.POST)
+    //employeeId may be provided through authorization, in this version, the id is explicitely referenced.
     public ResponseEntity<BooleanResponse> evaluate(@ApiParam(value = "the evaluating employee", required = true) @RequestParam  Integer employeeId,
                                                     @ApiParam(value = "the evaluation itself", required = true) @RequestBody  Evaluation evaluation) {
         //some magic here...
