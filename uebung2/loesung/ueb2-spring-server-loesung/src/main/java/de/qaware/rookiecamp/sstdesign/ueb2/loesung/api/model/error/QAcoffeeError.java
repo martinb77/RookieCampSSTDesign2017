@@ -1,4 +1,4 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.error;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
@@ -10,7 +10,7 @@ import java.util.Objects;
  * business errors
  */
 @ApiModel(description = "business errors")
-public class Error {
+public class QAcoffeeError {
     @JsonProperty
     @ApiModelProperty("The type of the error.")
     private ErrorCode errorCode;
@@ -27,7 +27,7 @@ public class Error {
         this.errorCode = errorCode;
     }
 
-    public Error message(String message) {
+    public QAcoffeeError message(String message) {
         this.message = message;
         return this;
     }
@@ -54,9 +54,9 @@ public class Error {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Error error = (Error) o;
-        return Objects.equals(this.errorCode, error.errorCode) &&
-                Objects.equals(this.message, error.message);
+        QAcoffeeError QAcoffeeError = (QAcoffeeError) o;
+        return Objects.equals(this.errorCode, QAcoffeeError.errorCode) &&
+                Objects.equals(this.message, QAcoffeeError.message);
     }
 
     @Override

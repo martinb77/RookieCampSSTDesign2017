@@ -1,7 +1,7 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.model.Beverage;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Beverage;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.error.QAcoffeeError;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
  */
 @ApiModel(description = "Response of a Beverage list.")
 public class BeverageListResponse extends QAcoffeeResponse<List<Beverage>> {
-    public BeverageListResponse(List<Beverage> payload, Errors businessErrors) {
+    public BeverageListResponse(List<Beverage> payload, List<QAcoffeeError> businessErrors) {
         super(payload, businessErrors);
     }
 }

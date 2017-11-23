@@ -1,4 +1,4 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.model;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;

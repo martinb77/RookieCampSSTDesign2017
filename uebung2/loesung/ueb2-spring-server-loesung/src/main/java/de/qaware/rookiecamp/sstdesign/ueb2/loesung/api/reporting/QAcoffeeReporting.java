@@ -1,6 +1,6 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.reporting;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.error.QAcoffeeError;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -21,7 +21,7 @@ public class QAcoffeeReporting {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = ReportResponse.class),
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.",
-                    response = Errors.class)})
+                    response = QAcoffeeError.class, responseContainer = "list")})
     @RequestMapping(path = "/create", method = RequestMethod.GET)
     public ResponseEntity<ReportResponse> createReport() {
         //some magic here...

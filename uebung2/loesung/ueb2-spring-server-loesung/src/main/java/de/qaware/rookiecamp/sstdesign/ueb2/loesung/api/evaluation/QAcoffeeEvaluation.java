@@ -1,8 +1,8 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.evaluation;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
 import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.BooleanResponse;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.evaluation.model.Evaluation;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Evaluation;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.error.QAcoffeeError;
 import io.swagger.annotations.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,9 +20,9 @@ public class QAcoffeeEvaluation {
     @ApiOperation(value = "Place a new evaluation.", notes = "Returns TRUE if the evaluation was successful processed, FALSE if not + Errors.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful operation, may contain business errors.", response = BooleanResponse.class),
-            @ApiResponse(code = 400, message = "Wrong parameters, unable to process the request in a proper way.", response = Errors.class),
+            @ApiResponse(code = 400, message = "Wrong parameters, unable to process the request in a proper way.", response = Error.class, responseContainer = "list"),
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.",
-                    response = Errors.class)})
+                    response = QAcoffeeError.class, responseContainer = "list")})
     @RequestMapping(path = "/evaluate", method = RequestMethod.POST)
     //employeeId may be provided through authorization, in this version, the id is explicitely referenced.
     public ResponseEntity<BooleanResponse> evaluate(@ApiParam(value = "the evaluating employee", required = true) @RequestParam  Integer employeeId,

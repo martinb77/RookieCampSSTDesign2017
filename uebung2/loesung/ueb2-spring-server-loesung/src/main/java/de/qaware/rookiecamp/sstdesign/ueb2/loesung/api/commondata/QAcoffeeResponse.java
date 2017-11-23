@@ -1,8 +1,11 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.error.QAcoffeeError;
 import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Common response class for all QAcoffee services.
@@ -18,12 +21,13 @@ public abstract class QAcoffeeResponse <T> {
 
     @JsonProperty
     @ApiModelProperty("possible business errors.")
-    private Errors businessErrors;
+    @Valid
+    private List<QAcoffeeError> businessErrors;
 
     public QAcoffeeResponse() {
     }
 
-    public QAcoffeeResponse(T payload, Errors businessErrors) {
+    public QAcoffeeResponse(T payload, List<QAcoffeeError> businessErrors) {
         this.payload = payload;
         this.businessErrors = businessErrors;
     }
@@ -36,11 +40,11 @@ public abstract class QAcoffeeResponse <T> {
         this.payload = payload;
     }
 
-    public Errors getBusinessErrors() {
+    public List<QAcoffeeError> getBusinessErrors() {
         return businessErrors;
     }
 
-    public void setBusinessErrors(Errors businessErrors) {
+    public void setBusinessErrors(List<QAcoffeeError> businessErrors) {
         this.businessErrors = businessErrors;
     }
 

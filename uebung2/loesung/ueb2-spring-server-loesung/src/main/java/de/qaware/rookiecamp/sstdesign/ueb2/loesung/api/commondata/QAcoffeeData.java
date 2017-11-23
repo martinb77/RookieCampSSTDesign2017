@@ -1,6 +1,6 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.error.QAcoffeeError;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -21,7 +21,7 @@ public class QAcoffeeData {
             @ApiResponse(code = 200, message = "Successful operation, may contain business errors.",
                     response = BeverageListResponse.class),
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.",
-                    response = Errors.class)})
+                    response = QAcoffeeError.class, responseContainer = "list")})
     @RequestMapping(path = "/beverages", method = RequestMethod.GET)
     public ResponseEntity<BeverageListResponse> getBeverages() {
         //some magic here...
@@ -33,7 +33,7 @@ public class QAcoffeeData {
             @ApiResponse(code = 200, message = "Successful operation, may contain business errors.",
                     response = CoffeeListResponse.class),
             @ApiResponse(code = 500, message = "An internal error occurred, unable to process the request in a proper way.",
-                    response = Errors.class)})
+                    response = QAcoffeeError.class, responseContainer = "list")})
     @RequestMapping(path = "/coffees", method = RequestMethod.GET)
     public ResponseEntity<CoffeeListResponse> getCoffees() {
         //some magic here...
