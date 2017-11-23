@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Api(description = "QAcoffee base data api - only for getting data.", tags = {"data"})
 @RequestMapping(path = "/data", produces = "application/json")
 @Controller
-public class QAcoffeeDataAPI {
+public class QAcoffeeData {
 
     @ApiOperation(value = "Returns all beverages of QAcoffee.")
     @ApiResponses(value = {

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Api(description = "QAcoffee reporting api", tags = {"reporting"})
 @RequestMapping(path = "/reporting", produces = "application/json")
 @Controller
-public class QAcoffeeReportingAPI {
+public class QAcoffeeReporting {
 
     @ApiOperation(value = "Create a new report upon all stored evaluations.", notes = "Created report is a calculated " +
             "average for the numerical values and a summary (all comibined) for the remarks.")

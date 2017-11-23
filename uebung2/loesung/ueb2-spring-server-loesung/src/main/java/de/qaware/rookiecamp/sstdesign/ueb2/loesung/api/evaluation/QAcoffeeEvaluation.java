@@ -2,6 +2,7 @@ package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.evaluation;
 
 import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
 import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.BooleanResponse;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.evaluation.model.Evaluation;
 import io.swagger.annotations.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Api(description = "The QAcoffee evaluation API - for evaluating beverages.", tags = {"evaluation"})
 @RequestMapping(path = "/evaluation", produces = "application/json")
 @Controller
-public class QAcoffeeEvaluationAPI {
+public class QAcoffeeEvaluation {
 
     @ApiOperation(value = "Place a new evaluation.", notes = "Returns TRUE if the evaluation was successful processed, FALSE if not + Errors.")
     @ApiResponses(value = {
@@ -25,7 +26,7 @@ public class QAcoffeeEvaluationAPI {
     @RequestMapping(path = "/evaluate", method = RequestMethod.POST)
     //employeeId may be provided through authorization, in this version, the id is explicitely referenced.
     public ResponseEntity<BooleanResponse> evaluate(@ApiParam(value = "the evaluating employee", required = true) @RequestParam  Integer employeeId,
-                                                    @ApiParam(value = "the evaluation itself", required = true) @RequestBody  Evaluation evaluation) {
+                                                    @ApiParam(value = "the evaluation itself", required = true) @RequestBody Evaluation evaluation) {
         //some magic here...
         return ResponseEntity.ok().build();
     }

@@ -1,5 +1,6 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata;
 
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.model.Beverage;
 import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
 import io.swagger.annotations.ApiModel;
 

@@ -1,6 +1,6 @@
 package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.admin;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.Beverage;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.model.Beverage;
 import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
 import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.BeverageResponse;
 import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.BooleanResponse;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Api(description = "Administrative functions for the QAcoffe application", tags = {"data"})
 @RequestMapping(path = "/data", produces = "application/json")
 @Controller
-public class QAcoffeeAdminAPI {
+public class QAcoffeeAdmin {
 
     @ApiOperation(value = "Create a new beverage. Requires ADMIN role.", notes = "Return value is the stored data including its new beverageId.")
     @ApiResponses(value = {
