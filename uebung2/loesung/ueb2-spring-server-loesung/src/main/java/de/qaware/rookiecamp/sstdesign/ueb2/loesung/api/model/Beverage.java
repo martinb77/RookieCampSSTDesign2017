@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.List;
-
 /**
  * QAcoffee Beverage data.
  */
@@ -21,27 +19,9 @@ public class Beverage {
             example = "Espresso")
     private String name;
 
-    @JsonProperty
-    @ApiModelProperty(value = "The coffee type which this beverage is made of.", required = true)
-    private Coffee coffee;
-
-    @JsonProperty
-    @ApiModelProperty(value = "TimePeriods, where this beverage was/is available for drinking.", required = true)
-    private List<TimePeriod> timePeriods;
-
-    public Beverage(Integer beverageId) {
-        this(beverageId, null, null);
-    }
-
-    public Beverage(Integer beverageId, String name, Coffee coffee) {
-        this (beverageId, name, coffee, null);
-    }
-
-    public Beverage(Integer beverageId, String name, Coffee coffee, List<TimePeriod> timePeriods) {
+    public Beverage(Integer beverageId, String name) {
         this.beverageId = beverageId;
         this.name = name;
-        this.coffee = coffee;
-        this.timePeriods = timePeriods;
     }
 
     /**
@@ -68,22 +48,6 @@ public class Beverage {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Coffee getCoffee() {
-        return coffee;
-    }
-
-    public void setCoffee(Coffee coffee) {
-        this.coffee = coffee;
-    }
-
-    public List<TimePeriod> getTimePeriods() {
-        return timePeriods;
-    }
-
-    public void setTimePeriods(List<TimePeriod> timePeriods) {
-        this.timePeriods = timePeriods;
     }
 
     @Override

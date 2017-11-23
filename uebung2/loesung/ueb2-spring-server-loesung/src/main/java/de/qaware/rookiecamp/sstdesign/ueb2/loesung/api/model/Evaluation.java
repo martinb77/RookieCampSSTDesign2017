@@ -22,14 +22,19 @@ public class Evaluation {
     private String remarks;
 
     @JsonProperty
-    @ApiModelProperty(value = "The beverage, which this evaluation is given.", required = true)
-    private Beverage beverage;
+    @ApiModelProperty(value = "The ID of the coffee, which this evaluation is given.", required = true)
+    private long coffeeId;
 
-    public Evaluation(Integer taste, Integer look, String remarks, Beverage beverage) {
+    @JsonProperty
+    @ApiModelProperty(value = "The ID of the beverage, which this evaluation is given.", required = true)
+    private long beverageId;
+
+    public Evaluation(Integer taste, Integer look, String remarks, long coffeeId, long beverageId) {
         this.taste = taste;
         this.look = look;
         this.remarks = remarks;
-        this.beverage = beverage;
+        this.coffeeId = coffeeId;
+        this.beverageId = beverageId;
     }
 
     public Integer getTaste() {
@@ -56,12 +61,20 @@ public class Evaluation {
         this.remarks = remarks;
     }
 
-    public Beverage getBeverage() {
-        return beverage;
+    public long getCoffeeId() {
+        return coffeeId;
     }
 
-    public void setBeverage(Beverage beverage) {
-        this.beverage = beverage;
+    public void setCoffeeId(long coffeeId) {
+        this.coffeeId = coffeeId;
+    }
+
+    public long getBeverageId() {
+        return beverageId;
+    }
+
+    public void setBeverageId(long beverageId) {
+        this.beverageId = beverageId;
     }
 
     @Override
@@ -71,18 +84,20 @@ public class Evaluation {
 
         Evaluation that = (Evaluation) o;
 
-        if (taste != null ? !taste.equals(that.taste) : that.taste != null) return false;
-        if (look != null ? !look.equals(that.look) : that.look != null) return false;
-        if (remarks != null ? !remarks.equals(that.remarks) : that.remarks != null) return false;
-        return beverage != null ? beverage.equals(that.beverage) : that.beverage == null;
+        if (coffeeId != that.coffeeId) return false;
+        if (beverageId != that.beverageId) return false;
+        if (!taste.equals(that.taste)) return false;
+        if (!look.equals(that.look)) return false;
+        return remarks != null ? remarks.equals(that.remarks) : that.remarks == null;
     }
 
     @Override
     public int hashCode() {
-        int result = taste != null ? taste.hashCode() : 0;
-        result = 31 * result + (look != null ? look.hashCode() : 0);
+        int result = taste.hashCode();
+        result = 31 * result + look.hashCode();
         result = 31 * result + (remarks != null ? remarks.hashCode() : 0);
-        result = 31 * result + (beverage != null ? beverage.hashCode() : 0);
+        result = 31 * result + (int) (coffeeId ^ (coffeeId >>> 32));
+        result = 31 * result + (int) (beverageId ^ (beverageId >>> 32));
         return result;
     }
 }

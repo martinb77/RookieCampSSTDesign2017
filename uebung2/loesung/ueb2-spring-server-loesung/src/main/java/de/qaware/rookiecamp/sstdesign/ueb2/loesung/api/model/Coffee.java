@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.List;
+
 /**
  * Coffee data.
  */
@@ -23,6 +25,10 @@ public class Coffee {
     @ApiModelProperty
     private byte[] image;
 
+    @JsonProperty
+    @ApiModelProperty(value = "TimePeriods, where this beverage was/is available for drinking.", required = true)
+    private List<TimePeriod> timePeriods;
+
     public Coffee(long coffeeId) {
         this.coffeeId = coffeeId;
     }
@@ -31,6 +37,13 @@ public class Coffee {
         this.coffeeId = coffeeId;
         this.brand = brand;
         this.image = image;
+    }
+
+    public Coffee(long coffeeId, String brand, byte[] image, List<TimePeriod> timePeriods) {
+        this.coffeeId = coffeeId;
+        this.brand = brand;
+        this.image = image;
+        this.timePeriods = timePeriods;
     }
 
     public long getCoffeeId() {
@@ -55,6 +68,14 @@ public class Coffee {
 
     public void setImage(byte[] image) {
         this.image = image;
+    }
+
+    public List<TimePeriod> getTimePeriods() {
+        return timePeriods;
+    }
+
+    public void setTimePeriods(List<TimePeriod> timePeriods) {
+        this.timePeriods = timePeriods;
     }
 
     @Override
