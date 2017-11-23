@@ -1,8 +1,7 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.evaluation;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Errors;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Evaluation;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.response.BooleanResponse;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.BooleanResponse;
 import io.swagger.annotations.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

@@ -1,4 +1,4 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.exception;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error;
 
 public class ApiException extends Exception{
     private int code;

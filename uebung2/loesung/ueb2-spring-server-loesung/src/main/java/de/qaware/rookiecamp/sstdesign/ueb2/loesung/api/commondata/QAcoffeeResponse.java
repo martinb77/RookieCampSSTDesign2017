@@ -1,7 +1,7 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.response;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
 import io.swagger.annotations.ApiModelProperty;
 
 /**

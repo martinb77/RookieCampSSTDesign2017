@@ -1,7 +1,6 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.response;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Coffee;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
 import io.swagger.annotations.ApiModel;
 
 /**

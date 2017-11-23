@@ -1,10 +1,8 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.List;
 
 /**
  * QAcoffee Employee data.

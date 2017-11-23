@@ -1,9 +1,9 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.admin;
 
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Beverage;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model.Errors;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.response.BeverageResponse;
-import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.response.BooleanResponse;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.Beverage;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error.Errors;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.BeverageResponse;
+import de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.commondata.BooleanResponse;
 import io.swagger.annotations.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

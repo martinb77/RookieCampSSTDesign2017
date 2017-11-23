@@ -1,4 +1,4 @@
-package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.model;
+package de.qaware.rookiecamp.sstdesign.ueb2.loesung.api.error;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
